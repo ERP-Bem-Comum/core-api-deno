@@ -10,11 +10,11 @@
 
 | # | Status | Última atualização |
 | :--- | :--- | :--- |
-| Total | 22 | 2026-07-09 |
+| Total | 23 | 2026-07-22 |
 | `Decided` | 14 | — |
 | `Pending Response` | 0 | — |
 | `Obsoleta (revisada)` | 1 | — |
-| `Open` | 6 | — |
+| `Open` | 7 | — |
 | `Deferred` | 1 | — |
 
 ---
@@ -55,6 +55,7 @@ _Nenhuma._
 | [0015](./0015-charset-drizzle-roadmap.md) | Charset/collate por tabela via API drizzle-orm — roadmap | Upstream `drizzle-team/drizzle-orm` | Dívida tipográfica não-bloqueante: hoje SQL manual na migration `0000_*.sql` com comentário forte no schema TS. Reabrir quando drizzle-orm suportar `charset`/`collate` table-level + per-column |
 | [0019](./0019-hard-delete-tripwire-sem-superficie.md) | `TentativaDeExclusaoDetectada` — tripwire sem superfície | P.O. + decisão de infra/segurança | Não há comando de deleção física no sistema; melhor prevenir por privilégio MySQL que detectar por evento. Acopla a 0018 + RBAC |
 | [0023](./0023-language-runtime-reevaluation.md) | Reavaliação de runtime/linguagem (TS → Deno / Dart / Rust / F# / Kotlin / OCaml) | Decisão humana + spike | Motivada por "cansaço da disciplina manual" (ADTs simulados no TS). Finalistas **F#** e **Rust**; hedge Kotlin; OCaml/Dart/Swift fora. Nada decidido sem **spike strangler-fig medido**. Potencial supersede de ADR-0002/0009. Spike de código em `.claude/.planning/lang-spike-document-module/` |
+| [0024](./0024-cognito-vs-identidade-propria-seguranca.md) | Amazon Cognito vs. identidade própria — superfície de segurança | Decisão de produto sobre **MFA** (P.O.) + análise de custo/migração | Comparação eixo a eixo contra OWASP/OAuth BCP: o login atual está **na norma ou acima** (argon2id nos parâmetros exatos do OWASP; reuse detection conforme o BCP). Ganhos reais do Cognito são só **MFA** e **custódia da chave** — ambos obteníveis sem ele. **Segurança sozinha não fecha o caso.** Potencial supersede parcial do ADR-0024. Achados A1 (fallback silencioso da chave JWT, classe do #456) e A2 (JWT sem `aud`) pendentes de issue |
 
 ### 🔵 Deferred
 
@@ -126,6 +127,7 @@ Listadas como heads-up, sem arquivo criado ainda:
 | Migração TypeScript 6 → 7 | Q3/Q4 2026 quando 7.0 estabilizar |
 | Modelagem dos fakes (`fake-stcpclt`, `fake-bradesco`, `fake-legacy-api`) | Antes de implementar os containers da [Inquiry-0013](./0013-local-dev-simulator-and-ci.md) |
 | ADR — Pipeline CI/CD GitHub Actions + Devbox | Quando workflow `ci.yml` for ao primeiro merge ([Inquiry-0013](./0013-local-dev-simulator-and-ci.md)) |
+| Cognito — custo (MAU/plano) e esforço de migração | Se a P.O. definir MFA como requisito ([Inquiry-0024](./0024-cognito-vs-identidade-propria-seguranca.md), bloqueador 2) |
 
 ---
 
