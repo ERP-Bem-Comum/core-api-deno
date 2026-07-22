@@ -10,11 +10,11 @@
 
 | # | Status | Última atualização |
 | :--- | :--- | :--- |
-| Total | 21 | 2026-05-27 |
+| Total | 22 | 2026-07-09 |
 | `Decided` | 14 | — |
 | `Pending Response` | 0 | — |
 | `Obsoleta (revisada)` | 1 | — |
-| `Open` | 5 | — |
+| `Open` | 6 | — |
 | `Deferred` | 1 | — |
 
 ---
@@ -54,6 +54,7 @@ _Nenhuma._
 | [0014](./0014-schema-legado-vs-modelo-alvo.md) | Schema legado real vs. modelo alvo do handbook (4 perguntas Q1–Q4) | Banca interna + P.O. | Bloqueia (Q1) revisão do ADR-0017; (Q2) abertura de BC novo de Planejamento Orçamentário; (Q3) política de migração de `contracts`; (Q4) primeiro vertical slice |
 | [0015](./0015-charset-drizzle-roadmap.md) | Charset/collate por tabela via API drizzle-orm — roadmap | Upstream `drizzle-team/drizzle-orm` | Dívida tipográfica não-bloqueante: hoje SQL manual na migration `0000_*.sql` com comentário forte no schema TS. Reabrir quando drizzle-orm suportar `charset`/`collate` table-level + per-column |
 | [0019](./0019-hard-delete-tripwire-sem-superficie.md) | `TentativaDeExclusaoDetectada` — tripwire sem superfície | P.O. + decisão de infra/segurança | Não há comando de deleção física no sistema; melhor prevenir por privilégio MySQL que detectar por evento. Acopla a 0018 + RBAC |
+| [0023](./0023-language-runtime-reevaluation.md) | Reavaliação de runtime/linguagem (TS → Deno / Dart / Rust / F# / Kotlin / OCaml) | Decisão humana + spike | Motivada por "cansaço da disciplina manual" (ADTs simulados no TS). Finalistas **F#** e **Rust**; hedge Kotlin; OCaml/Dart/Swift fora. Nada decidido sem **spike strangler-fig medido**. Potencial supersede de ADR-0002/0009. Spike de código em `.claude/.planning/lang-spike-document-module/` |
 
 ### 🔵 Deferred
 
@@ -86,6 +87,7 @@ _Nenhuma._
 - [0004 — Node 24 + TypeScript 7](./0004-node-version-and-typescript-future.md)
 - [0006 — pnpm vs Bun](./0006-package-manager-pnpm-vs-bun.md)
 - [0020 — Adoção do Temporal API (ES2026)](./0020-temporal-api-adoption.md)
+- [0023 — Reavaliação de runtime/linguagem (TS → Deno / Dart / Rust / F# / Kotlin)](./0023-language-runtime-reevaluation.md)
 
 ### Segurança & Governance
 - [0005 — Supply chain Axios](./0005-supply-chain-axios-and-dependency-hardening.md)
