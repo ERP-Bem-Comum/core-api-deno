@@ -56,17 +56,26 @@ import type { RealizedReadPort } from '../../application/ports/realized-read.ts'
 
 export type ReportsDriver = 'memory' | 'mysql';
 
-export type ReportsCompositionConfig = Readonly<{
-  driver: ReportsDriver;
-  /** Connection string do `partners` — fonte do REP-1 (ADR-0014). */
-  partnersUrl?: string;
-  /** Connection string do `financial` — fonte do REP-2/REP-4 e do realizado (S6, ADR-0014). */
-  financialUrl?: string;
-  /** Connection string do `contracts` — subtraendo do anti-join do REP-2 (#437, ADR-0014). */
-  contractsUrl?: string;
-  /** Connection string do `budget-plans` — fonte do orçado no Realizado × Planejado (S6, ADR-0014). */
-  budgetPlansUrl?: string;
-}>;
+/**
+ * União discriminada (#456): no driver `mysql` os quatro endereços são obrigatórios **por
+ * construção** — o compilador garante o que até então eram quatro `throw` de boot aqui dentro.
+ * A guarda de boot (`src/shared/persistence/module-driver-config.ts`) resolve a cascata
+ * `REPORTS_*_DATABASE_URL` → `*_DATABASE_URL` do módulo-fonte e entrega o valor já pronto,
+ * acumulando o que faltar com os erros dos outros módulos em vez de derrubar o boot sozinha.
+ */
+export type ReportsCompositionConfig =
+  | Readonly<{ driver: 'memory' }>
+  | Readonly<{
+      driver: 'mysql';
+      /** Connection string do `partners` — fonte do REP-1 (ADR-0014). */
+      partnersUrl: string;
+      /** Connection string do `financial` — fonte do REP-2/REP-4 e do realizado (S6, ADR-0014). */
+      financialUrl: string;
+      /** Connection string do `contracts` — subtraendo do anti-join do REP-2 (#437, ADR-0014). */
+      contractsUrl: string;
+      /** Connection string do `budget-plans` — fonte do orçado no Realizado × Planejado (S6). */
+      budgetPlansUrl: string;
+    }>;
 
 export type ReportsHttpDeps = Readonly<{
   listTeam: TeamReportReadPort['list'];
@@ -106,24 +115,21 @@ export const buildReportsHttpDeps = async (
       shutdown: () => Promise.resolve(),
     };
   }
-  if (config.partnersUrl === undefined || config.partnersUrl.length === 0) {
-    throw new Error('reports-composition: driver mysql exige partnersUrl');
+  const { partnersUrl, financialUrl, contractsUrl, budgetPlansUrl } = config;
+
+  // Defesa em profundidade (W2/C4): o tipo garante PRESENCA, nao conteudo — `partnersUrl: ''`
+  // type-checka. O unico chamador de producao (`server.ts`) recebe da guarda de boot, que ja trata
+  // `''` como ausente e acusa a variavel pelo nome; esta linha existe para o chamador FUTURO (worker,
+  // harness, job) que leia env por conta propria e chegaria ao mysql2 com `uri: ''` e um erro
+  // ininteligivel. Nao e' a validacao de ambiente que a T028 tirou daqui — aquela nomeava env e
+  // derrubava o boot uma fonte por vez; esta e' uma assertiva de invariante do contrato do adapter,
+  // inalcancavel pelo boot, e mantem o reports simetrico aos outros quatro composition roots.
+  if ([partnersUrl, financialUrl, contractsUrl, budgetPlansUrl].some((url) => url.length === 0)) {
+    throw new Error('reports-composition: driver mysql exige as 4 connection strings nao-vazias');
   }
-  if (config.financialUrl === undefined || config.financialUrl.length === 0) {
-    throw new Error('reports-composition: driver mysql exige financialUrl');
-  }
-  if (config.contractsUrl === undefined || config.contractsUrl.length === 0) {
-    throw new Error('reports-composition: driver mysql exige contractsUrl');
-  }
-  if (config.budgetPlansUrl === undefined || config.budgetPlansUrl.length === 0) {
-    throw new Error('reports-composition: driver mysql exige budgetPlansUrl');
-  }
-  const financialUrl = config.financialUrl;
-  const contractsUrl = config.contractsUrl;
-  const budgetPlansUrl = config.budgetPlansUrl;
 
   const teamReaderR = await openCollaboratorProjectionReader({
-    connectionString: config.partnersUrl,
+    connectionString: partnersUrl,
   });
   if (!teamReaderR.ok) {
     throw new Error(`reports-composition: falha ao abrir reader do partners: ${teamReaderR.error}`);
@@ -133,7 +139,7 @@ export const buildReportsHttpDeps = async (
   // Pool próprio do reader demográfico, também aberto UMA vez no boot (incidente RDS 0001).
   // `referenceDate` da faixa etária sai do ClockReal, injetado aqui — nunca de `new Date()` lá.
   const demographicsReaderR = await openCollaboratorDemographicsReader({
-    connectionString: config.partnersUrl,
+    connectionString: partnersUrl,
     clock: ClockReal(),
   });
   if (!demographicsReaderR.ok) {

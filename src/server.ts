@@ -10,6 +10,7 @@ import process from 'node:process';
 import { buildApp } from '#src/shared/http/app.ts';
 import { readHttpConfig } from '#src/shared/http/config.ts';
 import { readEmailLinkBaseUrls } from '#src/shared/http/email-link-base-urls.ts';
+import { readModuleDriverConfigs } from '#src/shared/persistence/module-driver-config.ts';
 import {
   installLastResortHandlers,
   processLastResortDeps,
@@ -107,8 +108,28 @@ const readProgramsLogoConfig = (
 const main = async (): Promise<void> => {
   const config = readHttpConfig(process.env);
 
-  const authDriver = process.env['AUTH_DRIVER'] === 'mysql' ? 'mysql' : 'memory';
-  const authConnString = process.env['AUTH_DATABASE_URL'];
+  // #456 — decisao UNICA de driver dos 7 modulos, antes de qualquer pool ser aberto: em producao,
+  // configuracao ausente/invalida derruba o boot com o relatorio completo (EX_CONFIG=78, FR-004/005);
+  // fora de producao degrada para memoria AVISANDO modulo a modulo (FR-006). Ate aqui cada modulo
+  // decidia sozinho, lendo a propria variavel de driver num ternario calado (`=== 'mysql' ? mysql :
+  // memory`) — o que serviu banco vazio com HTTP 200 em #374 (budget-plans) e #444 (reports).
+  //
+  // Encerra com `process.exitCode` + `return`, nunca com `process.exit`: em container o stderr e um
+  // pipe, e `handbook/reference/nodejs/Process.md:4156-4163` e literal — "Pipes (and sockets):
+  // _synchronous_ on Windows, _asynchronous_ on POSIX" … "not written at all if `process.exit()` is
+  // called before an asynchronous write completes". Um `exit 78` mudo aniquilaria o valor da feature,
+  // que e o diagnostico (FR-005/FR-010), nao o codigo de saida. Mesmo padrao dos jobs
+  // (`src/jobs/auth/sync-permissions/run.ts:7-8`) e dos workers. Seguro aqui porque nenhum handle
+  // esta aberto neste ponto do boot: o event loop esvazia e o processo sai com 78.
+  const drivers = readModuleDriverConfigs(process.env);
+  if (!drivers.ok) {
+    for (const message of drivers.error) process.stderr.write(`server: ${message}\n`);
+    process.exitCode = 78;
+    return;
+  }
+  const modules = drivers.value.modules;
+  for (const warning of drivers.value.warnings) process.stderr.write(`server: ${warning}\n`);
+
   // Seed RBAC via env — inerte fora de E2E/dev (guarda dupla CORE_API_E2E + AUTH_SEED_JSON).
   const authSeed = parseE2eAuthSeed(process.env);
   // BE-REC-001: limite dedicado de login/refresh via env; ausente/malformado → default (5/min).
@@ -122,10 +143,12 @@ const main = async (): Promise<void> => {
       : undefined;
   // BE-REC-003 + #331/#332: origem confiável dos links de e-mail (nunca header Host).
   // Inválida, ou ausente em produção → boot falha (EX_CONFIG), nunca link localhost/relativo.
+  // `process.exitCode` + `return` pelo mesmo motivo do bloco de drivers acima (Process.md:4156-4163).
   const emailLinkUrls = readEmailLinkBaseUrls(process.env);
   if (!emailLinkUrls.ok) {
     for (const message of emailLinkUrls.error) process.stderr.write(`server: ${message}\n`);
-    process.exit(78);
+    process.exitCode = 78;
+    return;
   }
   const { resetBaseUrl, activationBaseUrl, selfRegistrationBaseUrl } = emailLinkUrls.value;
   // ADR-0052 — modo do RBAC. `bypass` desliga a autorização por permissão (todo autenticado é
@@ -135,9 +158,9 @@ const main = async (): Promise<void> => {
     process.stderr.write(rbacBypassBanner(process.env['NODE_ENV'] ?? 'undefined'));
   }
   const authDeps = await buildAuthHttpDeps({
-    driver: authDriver,
+    driver: modules.auth.driver,
     rbacMode,
-    ...(authConnString !== undefined ? { connectionString: authConnString } : {}),
+    ...(modules.auth.driver === 'mysql' ? { connectionString: modules.auth.connectionString } : {}),
     ...(authSeed !== undefined ? { seed: authSeed } : {}),
     ...(sensitiveRateLimit !== undefined ? { sensitiveRateLimit } : {}),
     ...(resetBaseUrl !== undefined ? { resetBaseUrl } : {}),
@@ -145,16 +168,12 @@ const main = async (): Promise<void> => {
   });
 
   // CTR-NUMBER-PROGRAM: read port de programs (ADR-0006/0014) p/ contracts compor o bloco
-  // `program`. Só em mysql + PROGRAMS_DATABASE_URL; falha de abertura DEGRADA (não derruba o
-  // boot — a composição do programa é opcional, ADR-0032). Fechado no graceful shutdown.
-  const programsWriterUrl = process.env['PROGRAMS_DATABASE_URL'];
+  // `program`. Só em mysql; falha de abertura DEGRADA (não derruba o boot — a composição do
+  // programa é opcional, ADR-0032). Fechado no graceful shutdown.
+  const programs = modules.programs;
   let programsReadPort: ProgramsReadPort | undefined = undefined;
-  if (
-    process.env['PROGRAMS_DRIVER'] === 'mysql' &&
-    programsWriterUrl !== undefined &&
-    programsWriterUrl.length > 0
-  ) {
-    const portR = await buildProgramsReadPort({ connectionString: programsWriterUrl });
+  if (programs.driver === 'mysql') {
+    const portR = await buildProgramsReadPort({ connectionString: programs.connectionString });
     if (portR.ok) programsReadPort = portR.value;
     else
       process.stderr.write(
@@ -162,15 +181,15 @@ const main = async (): Promise<void> => {
       );
   }
 
-  // RW split (ADR-0026): CONTRACTS_DATABASE_URL = writer; CONTRACTS_READER_URL = réplica
-  // (ausente → reusa o writer, single-node). Reads roteiam ao reader.
-  const contractsWriterUrl = process.env['CONTRACTS_DATABASE_URL'];
+  // RW split (ADR-0026): o writer vem da guarda; CONTRACTS_READER_URL = réplica OPCIONAL — fica
+  // fora da guarda de propósito (#456 FR-008), ausente → reusa o writer, single-node.
+  const contracts = modules.contracts;
   const contractsReaderUrl = process.env['CONTRACTS_READER_URL'];
   const contractsDeps = await buildContractsHttpDeps(
-    process.env['CONTRACTS_DRIVER'] === 'mysql'
+    contracts.driver === 'mysql'
       ? {
           driver: 'mysql',
-          ...(contractsWriterUrl !== undefined ? { writerUrl: contractsWriterUrl } : {}),
+          writerUrl: contracts.connectionString,
           ...(contractsReaderUrl !== undefined ? { readerUrl: contractsReaderUrl } : {}),
           ...(programsReadPort !== undefined ? { programReadPort: programsReadPort } : {}),
         }
@@ -180,15 +199,15 @@ const main = async (): Promise<void> => {
         },
   );
 
-  // RW split (ADR-0026) do módulo partners: PARTNERS_DATABASE_URL = writer; PARTNERS_READER_URL
-  // = réplica (ausente → reusa o writer). Reads (lista de colaboradores) roteiam ao reader.
-  const partnersWriterUrl = process.env['PARTNERS_DATABASE_URL'];
+  // RW split (ADR-0026) do módulo partners: o writer vem da guarda; PARTNERS_READER_URL = réplica
+  // OPCIONAL, também fora da guarda (#456 FR-008) — ausente → reusa o writer.
+  const partners = modules.partners;
   const partnersReaderUrl = process.env['PARTNERS_READER_URL'];
   const partnersDeps = await buildPartnersHttpDeps(
-    process.env['PARTNERS_DRIVER'] === 'mysql'
+    partners.driver === 'mysql'
       ? {
           driver: 'mysql',
-          ...(partnersWriterUrl !== undefined ? { writerUrl: partnersWriterUrl } : {}),
+          writerUrl: partners.connectionString,
           ...(partnersReaderUrl !== undefined ? { readerUrl: partnersReaderUrl } : {}),
           // campo legado PT do partners — rename rastreado na issue #333
           ...(selfRegistrationBaseUrl !== undefined
@@ -206,13 +225,13 @@ const main = async (): Promise<void> => {
 
   // Módulo programs (spec 008, ADR-0033) → /api/v1/programs. Logo storage S3/MinIO (ADR-0019)
   // só quando todas as envs PROGRAMS_LOGO_* presentes; ausente → storage in-memory (degradado).
-  // `programsWriterUrl` já lido acima (read port de contracts). Reusa a mesma connection string.
+  // Mesma connection string do read port acima.
   const programsLogo = readProgramsLogoConfig(process.env);
   const programsDeps = await buildProgramsHttpDeps(
-    process.env['PROGRAMS_DRIVER'] === 'mysql'
+    programs.driver === 'mysql'
       ? ({
           driver: 'mysql',
-          ...(programsWriterUrl !== undefined ? { writerUrl: programsWriterUrl } : {}),
+          writerUrl: programs.connectionString,
           ...(programsLogo !== undefined ? { logo: programsLogo } : {}),
         } satisfies ProgramsCompositionConfig)
       : ({
@@ -222,66 +241,33 @@ const main = async (): Promise<void> => {
   );
 
   // Módulo financial (spec 009, fatia 1) → /api/v2/financial. Greenfield V2 (plugin direto).
-  // Driver mysql só com FINANCIAL_DRIVER=mysql + FINANCIAL_DATABASE_URL; senão in-memory (degradado).
-  const financialWriterUrl = process.env['FINANCIAL_DATABASE_URL'];
+  const financial = modules.financial;
   const financialDeps = await buildFinancialHttpDeps(
-    process.env['FINANCIAL_DRIVER'] === 'mysql'
-      ? {
-          driver: 'mysql',
-          ...(financialWriterUrl !== undefined ? { writerUrl: financialWriterUrl } : {}),
-        }
+    financial.driver === 'mysql'
+      ? { driver: 'mysql', writerUrl: financial.connectionString }
       : { driver: 'memory' },
   );
 
   // Módulo budget-plans (BGP-PLAN-CRUD, issue #315) → /api/v2/budget-plans. Greenfield V2
-  // (plugin direto). Driver mysql só com BUDGET_PLANS_DRIVER=mysql + BUDGET_PLANS_DATABASE_URL
-  // (uma connection string: bgp_* + read ports prg_*/par_* — ADR-0014); senão in-memory (degradado).
-  const budgetPlansWriterUrl = process.env['BUDGET_PLANS_DATABASE_URL'];
+  // (plugin direto). Uma connection string: bgp_* + read ports prg_*/par_* (ADR-0014).
+  const budgetPlans = modules.budgetPlans;
   // Seed de catálogo via env — inerte fora de E2E/dev (guarda dupla CORE_API_E2E +
   // BUDGET_PLANS_SEED_JSON). Malformado sob a flag → boot falha (o throw propaga p/ main().catch).
   // Só o ramo memory consome; o mysql lê prg_*/par_* real.
   const budgetPlansSeed = parseE2eBudgetPlansSeed(process.env);
-  const budgetPlansUsesMysql =
-    process.env['BUDGET_PLANS_DRIVER'] === 'mysql' && budgetPlansWriterUrl !== undefined;
-  // Sinal NAO-silencioso: em producao, cair em memory significa servir um store VAZIO — a tela fica
-  // vazia mesmo com o dado migrado no banco (incidente pos-ETL de Orcamento, 2026-07-17). Avisa alto
-  // em vez de degradar calado. Em dev/E2E o memory e' intencional (seed), entao nao alarma.
-  if (!budgetPlansUsesMysql && process.env['NODE_ENV'] === 'production') {
-    process.stderr.write(
-      'server: budget-plans em MEMORY (degradado) — a API NAO le o MySQL. ' +
-        'Defina BUDGET_PLANS_DRIVER=mysql + BUDGET_PLANS_DATABASE_URL para servir o dado persistido.\n',
-    );
-  }
   const budgetPlansDeps = await buildBudgetPlansHttpDeps(
-    budgetPlansUsesMysql
-      ? { driver: 'mysql', connectionString: budgetPlansWriterUrl }
+    budgetPlans.driver === 'mysql'
+      ? { driver: 'mysql', connectionString: budgetPlans.connectionString }
       : { driver: 'memory', ...(budgetPlansSeed !== undefined ? { seed: budgetPlansSeed } : {}) },
   );
 
   // Módulo reports (épico Relatórios #114) → /api/v2/reports. Greenfield V2 (plugin direto).
   // Read-only, sem writer próprio — lê projeções via public-api (ADR-0006/0014): REP-1 (#238) do
   // `partners` (par_*), REP-2 (#240) do `financial` (fin_*) e, desde #437, o conjunto de
-  // contratantes com contrato Active do `contracts` (ctr_*) para o anti-join do REP-2. Cada URL cai
-  // no *_DATABASE_URL do módulo-fonte (mesmo database `core`, prefixos isolados) quando o override
-  // específico falta.
-  const reportsPartnersUrl = process.env['REPORTS_DATABASE_URL'] ?? partnersWriterUrl;
-  const reportsFinancialUrl = process.env['REPORTS_FINANCIAL_DATABASE_URL'] ?? financialWriterUrl;
-  const reportsContractsUrl = process.env['REPORTS_CONTRACTS_DATABASE_URL'] ?? contractsWriterUrl;
-  // S6 (#502): fonte do orçado no Realizado × Planejado. Cai no BUDGET_PLANS_DATABASE_URL quando o
-  // override específico falta (mesmo database `core`, prefixos isolados — ADR-0014).
-  const reportsBudgetPlansUrl =
-    process.env['REPORTS_BUDGET_PLANS_DATABASE_URL'] ?? budgetPlansWriterUrl;
-  const reportsDeps = await buildReportsHttpDeps(
-    process.env['REPORTS_DRIVER'] === 'mysql'
-      ? {
-          driver: 'mysql',
-          ...(reportsPartnersUrl !== undefined ? { partnersUrl: reportsPartnersUrl } : {}),
-          ...(reportsFinancialUrl !== undefined ? { financialUrl: reportsFinancialUrl } : {}),
-          ...(reportsContractsUrl !== undefined ? { contractsUrl: reportsContractsUrl } : {}),
-          ...(reportsBudgetPlansUrl !== undefined ? { budgetPlansUrl: reportsBudgetPlansUrl } : {}),
-        }
-      : { driver: 'memory' },
-  );
+  // contratantes com contrato Active do `contracts` (ctr_*) para o anti-join do REP-2; S6 (#502)
+  // soma o orçado do `budget-plans` (bgp_*). A cascata `REPORTS_*_DATABASE_URL` → `*_DATABASE_URL`
+  // do módulo-fonte é resolvida pela guarda de boot, que entrega os quatro endereços já validados.
+  const reportsDeps = await buildReportsHttpDeps(modules.reports);
 
   // requireAuth do auth (cross-módulo via public-api, ADR-0006/0024) protege as rotas de contracts.
   const requireAuth = makeRequireAuth(authDeps.verifyAccessToken);

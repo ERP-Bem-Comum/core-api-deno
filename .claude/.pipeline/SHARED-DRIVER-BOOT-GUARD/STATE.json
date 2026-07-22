@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "ticket": "SHARED-DRIVER-BOOT-GUARD",
+  "size": "M",
+  "createdAt": "2026-07-22T14:46:03.519Z",
+  "closedAt": "2026-07-22T16:24:23.922Z",
+  "currentWave": null,
+  "status": "closed-green",
+  "waves": [
+    {
+      "id": "W0",
+      "status": "done",
+      "agent": "tdd-strategist",
+      "startedAt": "2026-07-22T14:47:52.298Z",
+      "finishedAt": "2026-07-22T14:59:43.180Z",
+      "rounds": 1,
+      "reportPath": "002-tests/REPORT.md",
+      "outcome": "RED"
+    },
+    {
+      "id": "W1",
+      "status": "done",
+      "agent": "typescript-language-expert",
+      "startedAt": "2026-07-22T14:59:43.501Z",
+      "finishedAt": "2026-07-22T15:31:40.825Z",
+      "rounds": 1,
+      "reportPath": "003-impl/REPORT.md",
+      "outcome": "GREEN"
+    },
+    {
+      "id": "W2",
+      "status": "done",
+      "agent": "code-reviewer",
+      "startedAt": "2026-07-22T15:44:43.915Z",
+      "finishedAt": "2026-07-22T16:10:42.821Z",
+      "rounds": 2,
+      "reportPath": "004-code-review/REVIEW.md",
+      "outcome": "APPROVED"
+    },
+    {
+      "id": "W3",
+      "status": "done",
+      "agent": "ts-quality-checker",
+      "startedAt": "2026-07-22T16:12:06.277Z",
+      "finishedAt": "2026-07-22T16:24:23.618Z",
+      "rounds": 1,
+      "reportPath": "005-quality/REPORT.md",
+      "outcome": "GREEN"
+    }
+  ],
+  "blockers": [],
+  "lastEvent": "closed-green"
+}

@@ -117,7 +117,7 @@ Características da borda:
 - **Hardening** com `@fastify/helmet`, `@fastify/cors`, `@fastify/rate-limit` (limite dedicado para login/refresh).
 - **Auth/RBAC** cross-módulo: `requireAuth` + `authorize`/`hasPermission` exportados pelo `auth` protegem as rotas dos demais módulos.
 - **Read/Write split** (ADR-0026): cada módulo aceita `*_DATABASE_URL` (writer) e `*_READER_URL` (réplica; ausente → reusa o writer).
-- Drivers `memory` | `mysql` por módulo via env (`<MÓDULO>_DRIVER`); ausência de config degrada para in-memory (boot não cai).
+- Drivers `memory` | `mysql` por módulo via env (`<MÓDULO>_DRIVER`), resolvidos por uma única guarda no boot (`src/shared/persistence/module-driver-config.ts`, #456). **Em produção**, driver ausente/inválido ou `mysql` sem `*_DATABASE_URL` **derruba o boot** com exit 78 (`EX_CONFIG`), listando todos os problemas de uma vez — nunca degrada em silêncio (foi o que deixou #374 e #444 mudos). **Fora de produção**, degrada para in-memory com aviso por módulo. `memory` **explícito** é sempre aceito; em produção, avisa.
 
 ---
 
