@@ -4,6 +4,14 @@ Mudanças relevantes na documentação do projeto. Formato baseado em [Keep a Ch
 
 ---
 
+## 2026-07-23 — 🦕🐘 ADR-0054 + ADR-0055 (Accepted): re-plataforma Deno + PostgreSQL
+
+Decisão de re-plataforma do `core-api`, **medida antes de decidir** (spike `spike/0023`): sai do Node.js para o **Deno** ([ADR-0054](./architecture/adr/0054-deno-runtime-supersedes-node.md), supersedes [ADR-0002](./architecture/adr/0002-keep-nodejs-runtime.md) + [ADR-0009](./architecture/adr/0009-node-24-typescript-6-with-7-roadmap.md)) e do MySQL 8.4 para o **PostgreSQL** ([ADR-0055](./architecture/adr/0055-postgresql-supersedes-mysql.md), supersedes [ADR-0013](./architecture/adr/0013-mysql-database-engine.md) + [ADR-0020](./architecture/adr/0020-mysql-only-supersedes-dual-dialect.md)), **mantendo Drizzle**.
+
+Evidência medida: `node:test` roda nativo no Deno (**4335/0**, zero migração de teste); modelo de permissões least-privilege (`deno.json`); binário único bootou o app contra MySQL real no x99. Schema Postgres sai **~95% idêntico** (mapeamentos portáveis do ADR-0018/0020); ganho concreto = **LISTEN/NOTIFY** (wake do outbox ~500ms→~6ms, medido). **Bun rejeitado por ora** (bun#5090 → 12k asserções para migrar); **Node 26 + tsgo** registrado como fallback. Estratégia: **strangler-fig por módulo**, Node autoritativo até a paridade, harness de assinatura diferencial (`scripts/migration/runtime-signature.ts`) travando cada passo. `src/` **não** tocado na decisão. Primeira fatia: **Deno workspaces** (1 membro por módulo, `exports` = public-api → enforça o [ADR-0006](./architecture/adr/0006-modular-monolith-core-api.md) no resolver).
+
+---
+
 ## 2026-07-16 — 🔓 ADR-0052 (Accepted): modo `AUTH_RBAC_MODE=bypass` — desligar a autorização por permissão, mantendo a autenticação
 
 Decisão do dono do sistema: introduzir o modo `bypass`, em que **todo usuário autenticado é
