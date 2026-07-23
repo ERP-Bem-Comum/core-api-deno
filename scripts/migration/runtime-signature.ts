@@ -80,7 +80,7 @@ type Signature = Readonly<{
   filesRun: number;
 }>;
 
-type RunResult = Readonly<{ runtime: 'node' | 'deno'; signature: Signature }>;
+type RunResult = Readonly<{ runtime: string; signature: Signature }>;
 
 // ── Descoberta de arquivos ───────────────────────────────────────────────────
 const findTestFiles = async (root: string, laneName: string): Promise<string[]> => {
@@ -155,54 +155,79 @@ const signatureOf = (xml: string): Signature => {
   };
 };
 
-// ── Execução por runtime ─────────────────────────────────────────────────────
-// spawnSync com shell:false (idioma de scripts/ci/test-integration.ts). Os dois
-// runners saem != 0 quando há teste vermelho, mas o XML JUnit ainda vem no stdout.
-// Node ESCREVE o JUnit num ARQUIVO (`--test-reporter-destination`): senão o stdout
-// dos próprios testes (logs de worker/email) se mistura ao XML e corrompe o parse.
-// Deno separa o output do reporter do stdout dos testes, então lê-se do stdout dele.
-const runJUnit = async (
-  runtime: 'node' | 'deno',
-  files: readonly string[],
-  lane: Lane,
-): Promise<string> => {
+// ── Registro de runtimes ─────────────────────────────────────────────────────
+// spawnSync com shell:false (idioma de scripts/ci/test-integration.ts). Cada runtime
+// declara como monta os args e de onde vem o JUnit. Node/Bun escrevem em ARQUIVO
+// (senão o stdout dos testes — logs de worker/email — corrompe o XML); Deno separa o
+// reporter do stdout, então lê-se do stdout dele.
+// node26 vem do fnm; sobrescreva com NODE26_BIN se necessário. Runtime sem binário é
+// silenciosamente pulado no `matrix`.
+const NODE26_BIN =
+  process.env['NODE26_BIN'] ??
+  `${process.env['HOME'] ?? ''}/.local/share/fnm/node-versions/v26.5.0/installation/bin/node`;
+
+type RtSpec = Readonly<{
+  bin: string;
+  junitFromStdout: boolean;
+  build: (files: readonly string[], lane: Lane, dest: string) => readonly string[];
+}>;
+
+const nodeArgs =
+  (strip: boolean) =>
+  (files: readonly string[], lane: Lane, dest: string): string[] => [
+    '--test',
+    ...(lane.concurrency1 === true ? ['--test-concurrency=1'] : []),
+    ...(strip ? ['--experimental-strip-types'] : []), // Node 26 estabilizou o strip nativo
+    '--no-warnings',
+    '--test-reporter=junit',
+    `--test-reporter-destination=${dest}`,
+    ...files,
+  ];
+
+const RUNTIMES: Readonly<Record<string, RtSpec>> = {
+  node: { bin: 'node', junitFromStdout: false, build: nodeArgs(true) },
+  node26: { bin: NODE26_BIN, junitFromStdout: false, build: nodeArgs(false) },
+  deno: {
+    bin: 'deno',
+    junitFromStdout: true,
+    build: (files, lane) => [
+      'test',
+      '--allow-read',
+      '--allow-env',
+      '--allow-sys',
+      ...(lane.denoNet === true ? ['--allow-net'] : []),
+      '--no-check',
+      '--reporter=junit',
+      ...files,
+    ],
+  },
+  bun: {
+    bin: 'bun',
+    junitFromStdout: false,
+    build: (files, _lane, dest) => [
+      'test',
+      '--reporter=junit',
+      `--reporter-outfile=${dest}`,
+      ...files,
+    ],
+  },
+};
+
+const runJUnit = async (runtime: string, files: readonly string[], lane: Lane): Promise<string> => {
+  const spec = RUNTIMES[runtime];
+  if (spec === undefined) throw new Error(`runtime desconhecido: ${runtime}`);
   const spawnEnv = {
     env: { ...process.env, ...lane.env },
     encoding: 'utf8' as const,
     maxBuffer: 256 * 1024 * 1024,
   };
-  if (runtime === 'deno') {
-    // `deno test` roda os arquivos SEQUENCIALMENTE por padrão (paraleliza só com --parallel),
-    // então concurrency1 = não passar --parallel. Não existe flag --jobs.
-    const perms = [
-      '--allow-read',
-      '--allow-env',
-      '--allow-sys',
-      ...(lane.denoNet === true ? ['--allow-net'] : []),
-    ];
-    const r = spawnSync(
-      'deno',
-      ['test', ...perms, '--no-check', '--reporter=junit', ...files],
-      spawnEnv,
-    );
+  if (spec.junitFromStdout) {
+    const r = spawnSync(spec.bin, [...spec.build(files, lane, '')], spawnEnv);
     return r.stdout;
   }
-  const dest = path.join(BASELINE_DIR, `.node-junit-${process.pid}.xml`);
   await mkdir(BASELINE_DIR, { recursive: true });
-  const conc = lane.concurrency1 === true ? ['--test-concurrency=1'] : [];
-  spawnSync(
-    'node',
-    [
-      '--test',
-      ...conc,
-      '--experimental-strip-types',
-      '--no-warnings',
-      '--test-reporter=junit',
-      `--test-reporter-destination=${dest}`,
-      ...files,
-    ],
-    spawnEnv,
-  );
+  const dest = path.join(BASELINE_DIR, `.junit-${runtime}-${process.pid}.xml`);
+  spawnSync(spec.bin, [...spec.build(files, lane, dest)], spawnEnv);
   const xml = await readFile(dest, 'utf8').catch(() => '');
   await rm(dest, { force: true });
   return xml;
@@ -222,7 +247,7 @@ const resetDb = async (): Promise<void> => {
   await c.end();
 };
 
-const runLane = async (runtime: 'node' | 'deno', lane: Lane): Promise<RunResult> => {
+const runLane = async (runtime: string, lane: Lane): Promise<RunResult> => {
   const files =
     lane.files ??
     (await Promise.all((lane.roots ?? []).map(async (r) => findTestFiles(r, lane.name)))).flat();
@@ -239,7 +264,7 @@ const runLane = async (runtime: 'node' | 'deno', lane: Lane): Promise<RunResult>
 const fmt = (s: Signature): string =>
   `leafTests=${s.leafTests} failures=${s.failures} errors=${s.errors} skipped=${s.skipped} filesRun=${s.filesRun}`;
 
-const baselinePath = (lane: string, runtime: 'node' | 'deno'): string =>
+const baselinePath = (lane: string, runtime: string): string =>
   path.join(BASELINE_DIR, `${lane}.${runtime}.json`);
 
 // Captura o baseline dos DOIS runtimes. `leafTests` NÃO é comparável cross-runner
@@ -258,10 +283,7 @@ const cmdBaseline = async (lane: Lane): Promise<number> => {
   return 0;
 };
 
-const loadBaseline = async (
-  lane: string,
-  runtime: 'node' | 'deno',
-): Promise<Signature | undefined> => {
+const loadBaseline = async (lane: string, runtime: string): Promise<Signature | undefined> => {
   try {
     return JSON.parse(await readFile(baselinePath(lane, runtime), 'utf8')) as Signature;
   } catch {
@@ -338,6 +360,43 @@ const cmdBench = async (lane: Lane, iterations: number): Promise<number> => {
   return 0;
 };
 
+// ── matrix: assinatura + tempo dos N runtimes lado a lado ────────────────────
+// Estende o estudo do port para além de node/deno: node26 (TS nativo estável), bun.
+// Runtime cujo binário não existe é pulado (reportado). 1º run = assinatura + cold;
+// runs seguintes = warm.
+const runtimeAvailable = (spec: RtSpec): boolean =>
+  spawnSync(spec.bin, ['--version'], { encoding: 'utf8' }).status === 0;
+
+const cmdMatrix = async (lane: Lane, iterations: number): Promise<number> => {
+  process.stdout.write(`\n== MATRIX · lane ${lane.name} (${iterations}× por runtime) ==\n`);
+  const files =
+    lane.files ??
+    (await Promise.all((lane.roots ?? []).map(async (r) => findTestFiles(r, lane.name)))).flat();
+  process.stdout.write(`  runtime  | leaf/fail | cold    warm(med)\n`);
+  for (const runtime of Object.keys(RUNTIMES)) {
+    const spec = RUNTIMES[runtime];
+    if (spec === undefined || !runtimeAvailable(spec)) {
+      process.stdout.write(`  ${runtime.padEnd(8)} | (binário ausente — pulado)\n`);
+      continue;
+    }
+    const times: number[] = [];
+    const xmls: string[] = [];
+    for (let i = 0; i < iterations; i += 1) {
+      if (lane.resetDb === true) await resetDb();
+      const start = performance.now();
+      xmls.push(await runJUnit(runtime, [...files], lane));
+      times.push(performance.now() - start);
+    }
+    const cold = times[0] ?? 0;
+    const warm = times.length > 1 ? median(times.slice(1)) : cold;
+    const sg = signatureOf(xmls[0] ?? '');
+    process.stdout.write(
+      `  ${runtime.padEnd(8)} | ${String(sg.leafTests).padStart(4)}/${sg.failures} | ${(cold / 1000).toFixed(2)}s  ${(warm / 1000).toFixed(2)}s\n`,
+    );
+  }
+  return 0;
+};
+
 // ── main ─────────────────────────────────────────────────────────────────────
 const main = async (): Promise<number> => {
   const [cmd, laneName] = process.argv.slice(2);
@@ -362,6 +421,10 @@ const main = async (): Promise<number> => {
     case 'bench': {
       const iters = Number(process.argv[4] ?? '3');
       return cmdBench(lane, Number.isFinite(iters) && iters > 0 ? iters : 3);
+    }
+    case 'matrix': {
+      const iters = Number(process.argv[4] ?? '3');
+      return cmdMatrix(lane, Number.isFinite(iters) && iters > 0 ? iters : 3);
     }
     default:
       process.stderr.write(`comando desconhecido: ${cmd}\n`);

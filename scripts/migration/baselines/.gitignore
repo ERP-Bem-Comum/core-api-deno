@@ -1,0 +1,3 @@
+# JUnit temporário escrito por runJUnit (node/node26/bun) e removido no fim; se o
+# processo for morto no meio, o arquivo vaza — este ignore evita rastreá-lo.
+.junit-*.xml
