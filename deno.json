@@ -1,0 +1,41 @@
+{
+  // Manifesto de permissões least-privilege para o port Node → Deno (inquiry 0023).
+  // Cada flag foi DERIVADA da superfície real de capabilities de `src/` e VALIDADA
+  // empiricamente pelo harness (scripts/migration/runtime-signature.ts):
+  //   - domínio 983=983 · 6 suítes de integração em paridade · all-unit 0 falhas.
+  //
+  // Princípio: produção recebe SÓ o que usa. A diferença que importa —
+  //   • `--allow-run` NÃO entra em produção (zero child_process em src/; só testes dão spawn).
+  //   • `--allow-write` só nos workers (event-delivery logger grava JSONL, e só se logPath
+  //     for configurado); o HTTP server não escreve disco.
+  //   • `--allow-sys` é obrigatório (mysql2/Node compat lê "hostname" — provado: sem ele,
+  //     `NotCapable: Requires sys access to "hostname"`).
+  //
+  // Escopos dinâmicos (host de DB/S3/SMTP, nomes de env var) vêm de config em runtime;
+  // marcados abaixo como "escopar para <fonte>" — apertar depois com a lista real.
+  "tasks": {
+    // ── HTTP server (borda, ADR-0025/0037) — o entrypoint mais enxuto ──────────
+    // net  : mysql2 (DB) + @aws-sdk (S3/Magalu) + nodemailer (SMTP) + fastify listen
+    // read : node_modules (código) + arquivo de connection-string do sweeper
+    // env  : ~30 vars de config (*_DATABASE_URL, *_READER_URL, rate limits, …)
+    // sys  : hostname (mysql2). SEM run, SEM write.
+    "serve": "deno run --allow-net --allow-read=. --allow-env --allow-sys src/server.ts",
+
+    // ── Workers de outbox/projeção — como o serve + write (event-delivery logger) ─
+    // write: escopar ao diretório de log configurado (logPath); só grava se definido.
+    "worker:outbox": "deno run --allow-net --allow-read=. --allow-env --allow-sys --allow-write src/modules/contracts/worker/run.ts",
+    "worker:email-dispatch": "deno run --allow-net --allow-read=. --allow-env --allow-sys --allow-write src/workers/email-dispatch/run.ts",
+
+    // ── Job de migração (Drizzle) — net + read + env + sys; sem run/write ────────
+    "job:migrate": "deno run --allow-net --allow-read=. --allow-env --allow-sys src/jobs/migrate/run.ts",
+
+    // ── Testes — superfície MAIOR que produção (por isso não se deriva prod deles) ─
+    // Adiciona --allow-run (testes de block-npm/only-allow-pnpm/driver dão spawn de node)
+    // e --allow-write (arquivos temporários). Sem net: a integração auto-skipa.
+    // Validado: read+env+sys+write+run → 0 falhas no all-unit.
+    "test": "deno test --allow-read --allow-env --allow-sys --allow-write --allow-run --no-check tests/",
+
+    // ── Testes de integração — o conjunto de teste + net (MySQL real via túnel) ──
+    "test:integration": "deno test --allow-read --allow-env --allow-sys --allow-write --allow-run --allow-net --no-check tests/"
+  }
+}

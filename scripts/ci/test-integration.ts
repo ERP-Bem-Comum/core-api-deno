@@ -14,7 +14,7 @@ import process from 'node:process';
 
 const EX_USAGE = 64; // sysexits.h — uso inválido.
 
-type Suite = Readonly<{
+export type Suite = Readonly<{
   services: readonly ('mysql' | 'minio' | 'mailpit')[];
   secrets: boolean; // cria os secrets de teste do MySQL
   env: Readonly<Record<string, string>>;
@@ -47,7 +47,7 @@ const ETL_DB_ENV: Readonly<Record<string, string>> = {
   ETL_CORE_CONNECTION_STRING: `mysql://root:rootpw-migration-test-only@127.0.0.1:${ETL_TEST_MYSQL_PORT}/core`,
 };
 
-const SUITES: Readonly<Record<string, Suite>> = {
+export const SUITES: Readonly<Record<string, Suite>> = {
   contracts: mysqlSuite({ MYSQL_INTEGRATION: '1' }, [
     'tests/modules/contracts/adapters/persistence/migrations/*.test.ts',
     'tests/modules/contracts/adapters/persistence/mysql-driver.test.ts',
@@ -304,4 +304,6 @@ const main = (): number => {
   }
 };
 
-process.exitCode = main();
+// Só executa quando invocado direto (não quando importado, ex.: pelo harness de
+// assinatura de runtime que reusa o manifesto SUITES sem rodar as suítes).
+if (import.meta.filename === process.argv[1]) process.exitCode = main();
