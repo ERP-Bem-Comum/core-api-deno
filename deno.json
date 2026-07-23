@@ -1,4 +1,5 @@
 {
+  "workspace": ["./src/modules/*"],
   // Manifesto de permissões least-privilege para o port Node → Deno (inquiry 0023).
   // Cada flag foi DERIVADA da superfície real de capabilities de `src/` e VALIDADA
   // empiricamente pelo harness (scripts/migration/runtime-signature.ts):

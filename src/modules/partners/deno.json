@@ -1,0 +1,19 @@
+{
+  "name": "@core/partners",
+  "version": "1.0.0",
+  "exports": {
+    "./collaborator-demographics-reader": "./public-api/collaborator-demographics-reader.ts",
+    "./collaborator-demographics": "./public-api/collaborator-demographics.ts",
+    "./collaborator-projection": "./public-api/collaborator-projection.ts",
+    "./contractor-view.mapper": "./public-api/contractor-view.mapper.ts",
+    "./email-events": "./public-api/email-events.ts",
+    "./etl": "./public-api/etl.ts",
+    "./http": "./public-api/http.ts",
+    ".": "./public-api/index.ts",
+    "./migrate": "./public-api/migrate.ts",
+    "./permissions": "./public-api/permissions.ts",
+    "./read": "./public-api/read.ts",
+    "./refs": "./public-api/refs.ts",
+    "./supplier-projection": "./public-api/supplier-projection.ts"
+  }
+}

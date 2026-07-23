@@ -1,0 +1,12 @@
+{
+  "name": "@core/auth",
+  "version": "1.0.0",
+  "exports": {
+    "./email-events": "./public-api/email-events.ts",
+    "./etl": "./public-api/etl.ts",
+    "./http": "./public-api/http.ts",
+    "./migrate": "./public-api/migrate.ts",
+    "./read": "./public-api/read.ts",
+    "./sync-permissions": "./public-api/sync-permissions.ts"
+  }
+}

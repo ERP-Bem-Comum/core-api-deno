@@ -1,0 +1,8 @@
+{
+  "name": "@core/notifications",
+  "version": "1.0.0",
+  "exports": {
+    ".": "./public-api/index.ts",
+    "./migrate": "./public-api/migrate.ts"
+  }
+}

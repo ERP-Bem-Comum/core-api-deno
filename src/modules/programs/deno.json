@@ -1,0 +1,12 @@
+{
+  "name": "@core/programs",
+  "version": "1.0.0",
+  "exports": {
+    "./events": "./public-api/events.ts",
+    "./http": "./public-api/http.ts",
+    ".": "./public-api/index.ts",
+    "./migrate": "./public-api/migrate.ts",
+    "./permissions": "./public-api/permissions.ts",
+    "./read": "./public-api/read.ts"
+  }
+}

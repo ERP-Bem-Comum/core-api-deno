@@ -1,0 +1,17 @@
+{
+  "name": "@core/financial",
+  "version": "1.0.0",
+  "exports": {
+    "./etl": "./public-api/etl.ts",
+    "./events": "./public-api/events.ts",
+    "./http": "./public-api/http.ts",
+    ".": "./public-api/index.ts",
+    "./migrate": "./public-api/migrate.ts",
+    "./payables-analysis-projection": "./public-api/payables-analysis-projection.ts",
+    "./payment-position-projection": "./public-api/payment-position-projection.ts",
+    "./permissions": "./public-api/permissions.ts",
+    "./realized-by-plan-projection": "./public-api/realized-by-plan-projection.ts",
+    "./realized-provisioned-projection": "./public-api/realized-provisioned-projection.ts",
+    "./suppliers-without-contract-projection": "./public-api/suppliers-without-contract-projection.ts"
+  }
+}

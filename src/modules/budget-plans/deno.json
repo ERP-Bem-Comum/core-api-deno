@@ -1,0 +1,12 @@
+{
+  "name": "@core/budget-plans",
+  "version": "1.0.0",
+  "exports": {
+    "./etl": "./public-api/etl.ts",
+    "./events": "./public-api/events.ts",
+    "./http": "./public-api/http.ts",
+    "./migrate": "./public-api/migrate.ts",
+    "./permissions": "./public-api/permissions.ts",
+    "./read": "./public-api/read.ts"
+  }
+}
