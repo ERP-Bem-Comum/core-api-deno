@@ -13,7 +13,6 @@
 
 import { describe, it, before } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -35,7 +34,7 @@ const PACKAGE_JSON = join(PROJECT_ROOT, 'package.json');
 const VALID_CONN = 'mysql://root:rootpw-migration-test-only@127.0.0.1:3306/core';
 const BAD_AUTH_CONN = 'mysql://invalid:invalid@127.0.0.1:3306/inexistente';
 
-const integrationEnabled = (): boolean => process.env.MYSQL_INTEGRATION === '1';
+const integrationEnabled = (): boolean => Deno.env.get('MYSQL_INTEGRATION') === '1';
 const skipReason = (): string =>
   integrationEnabled() ? 'unexpected' : 'MYSQL_INTEGRATION≠1 (rode `pnpm test:integration`)';
 
@@ -45,14 +44,14 @@ const skipReason = (): string =>
 const DUMMY_ROOT_PWD = 'rootpw-migration-test-only';
 const CONTAINER = 'core-api-mysql';
 const resetCoreDatabase = (): void => {
-  spawnSync(
-    'bash',
-    [
+  new Deno.Command('bash', {
+    args: [
       '-c',
       `docker exec ${CONTAINER} mysql --protocol=tcp -h 127.0.0.1 -uroot -p"${DUMMY_ROOT_PWD}" -e "DROP DATABASE IF EXISTS core; CREATE DATABASE core CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" mysql`,
     ],
-    { encoding: 'utf-8', timeout: 15_000 },
-  );
+    stdout: 'piped',
+    stderr: 'piped',
+  }).outputSync();
 };
 
 // ─── CA-1 — Dependência mysql2 ────────────────────────────────────────────

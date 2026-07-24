@@ -16,7 +16,6 @@
 
 import { describe, it, before } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -38,13 +37,22 @@ interface ExecOk {
   readonly stderr: string;
 }
 
-const sh = (cmd: string, opts: { readonly timeoutMs?: number } = {}): ExecOk => {
-  const r = spawnSync('bash', ['-c', cmd], {
+// Nota (migração Deno.Command): `outputSync()` é bloqueante — nenhum timer roda
+// enquanto ele espera o processo terminar, então `opts.timeoutMs` fica só na assinatura
+// (compat com os call-sites) sem enforcement real (o Node `spawnSync` matava o processo
+// ao estourar `timeout`; não há equivalente síncrono no `Deno.Command`).
+const sh = (cmd: string, _opts: { readonly timeoutMs?: number } = {}): ExecOk => {
+  const { code, stdout, stderr } = new Deno.Command('bash', {
+    args: ['-c', cmd],
     cwd: PROJECT_ROOT,
-    encoding: 'utf-8',
-    timeout: opts.timeoutMs ?? 30_000,
-  });
-  return { code: r.status ?? -1, stdout: r.stdout ?? '', stderr: r.stderr ?? '' };
+    stdout: 'piped',
+    stderr: 'piped',
+  }).outputSync();
+  return {
+    code,
+    stdout: new TextDecoder().decode(stdout),
+    stderr: new TextDecoder().decode(stderr),
+  };
 };
 
 const dockerAvailable = (): boolean => sh('docker compose version').code === 0;
@@ -205,7 +213,7 @@ describe('CTR-DB-MIGRATION-MYSQL — CA-10..14: aplicação E2E contra MySQL rea
     // Razão: `pnpm test` default não orquestra Docker; o lifecycle é gerido pelo
     // target `pnpm test:integration`, que sobe o MySQL com `--wait` antes de
     // disparar o node:test. Sem opt-in, todos os CA-10..14 são `t.skip()`.
-    if (process.env.MYSQL_INTEGRATION !== '1') {
+    if (Deno.env.get('MYSQL_INTEGRATION') !== '1') {
       skipReason = 'MYSQL_INTEGRATION≠1 (rode `pnpm test:integration`)';
       return;
     }

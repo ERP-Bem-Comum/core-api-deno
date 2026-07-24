@@ -17,7 +17,6 @@
 
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { spawnSync } from 'node:child_process';
 import { sql } from 'drizzle-orm';
 
 import {
@@ -30,19 +29,19 @@ const VALID_CONN = 'mysql://root:rootpw-migration-test-only@127.0.0.1:3306/core'
 const DUMMY_ROOT_PWD = 'rootpw-migration-test-only';
 const CONTAINER = 'core-api-mysql';
 
-const integrationEnabled = (): boolean => process.env.MYSQL_INTEGRATION === '1';
+const integrationEnabled = (): boolean => Deno.env.get('MYSQL_INTEGRATION') === '1';
 const skipReason = (): string =>
   integrationEnabled() ? 'unexpected' : 'MYSQL_INTEGRATION≠1 (rode `pnpm test:integration`)';
 
 const resetCoreDatabase = (): void => {
-  spawnSync(
-    'bash',
-    [
+  new Deno.Command('bash', {
+    args: [
       '-c',
       `docker exec ${CONTAINER} mysql --protocol=tcp -h 127.0.0.1 -uroot -p"${DUMMY_ROOT_PWD}" -e "DROP DATABASE IF EXISTS core; CREATE DATABASE core CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" mysql`,
     ],
-    { encoding: 'utf-8', timeout: 15_000 },
-  );
+    stdout: 'piped',
+    stderr: 'piped',
+  }).outputSync();
 };
 
 // ─── CA-9 — defaults estruturais do pool ──────────────────────────────────

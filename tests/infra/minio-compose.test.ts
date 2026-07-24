@@ -20,7 +20,6 @@
 
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { spawnSync } from 'node:child_process';
 import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -36,13 +35,20 @@ interface ExecOk {
   readonly stderr: string;
 }
 
-const sh = (cmd: string, timeoutMs = 30_000): ExecOk => {
-  const r = spawnSync('bash', ['-c', cmd], {
+// Nenhum call-site deste arquivo passa timeout customizado — parâmetro removido
+// (ver mysql-compose.test.ts para o caso com `timeoutMs` de fato usado).
+const sh = (cmd: string): ExecOk => {
+  const { code, stdout, stderr } = new Deno.Command('bash', {
+    args: ['-c', cmd],
     cwd: PROJECT_ROOT,
-    encoding: 'utf-8',
-    timeout: timeoutMs,
-  });
-  return { code: r.status ?? -1, stdout: r.stdout ?? '', stderr: r.stderr ?? '' };
+    stdout: 'piped',
+    stderr: 'piped',
+  }).outputSync();
+  return {
+    code,
+    stdout: new TextDecoder().decode(stdout),
+    stderr: new TextDecoder().decode(stderr),
+  };
 };
 
 const dockerCliAvailable = (): boolean => sh('docker compose version').code === 0;

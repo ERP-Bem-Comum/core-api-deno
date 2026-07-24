@@ -11,7 +11,6 @@
 
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -75,13 +74,19 @@ interface ComposeConfig {
   readonly services?: Readonly<Record<string, ComposeService>>;
 }
 
-const sh = (cmd: string, timeoutMs = 30_000): { code: number; stdout: string; stderr: string } => {
-  const r = spawnSync('bash', ['-c', cmd], {
+// Nenhum call-site deste arquivo passa timeout customizado — parâmetro removido.
+const sh = (cmd: string): { code: number; stdout: string; stderr: string } => {
+  const { code, stdout, stderr } = new Deno.Command('bash', {
+    args: ['-c', cmd],
     cwd: PROJECT_ROOT,
-    encoding: 'utf-8',
-    timeout: timeoutMs,
-  });
-  return { code: r.status ?? -1, stdout: r.stdout ?? '', stderr: r.stderr ?? '' };
+    stdout: 'piped',
+    stderr: 'piped',
+  }).outputSync();
+  return {
+    code,
+    stdout: new TextDecoder().decode(stdout),
+    stderr: new TextDecoder().decode(stderr),
+  };
 };
 const dockerCliAvailable = (): boolean => sh('docker compose version').code === 0;
 const skip = dockerCliAvailable() ? false : 'Docker CLI (plugin compose) ausente no PATH';

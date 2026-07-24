@@ -23,7 +23,6 @@
 
 import { describe, it, before, after } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync, chmodSync, rmSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -50,20 +49,28 @@ interface ExecOk {
   readonly stderr: string;
 }
 
+// Nota (migração Deno.Command): `outputSync()` é bloqueante — trava a isolate até o
+// processo terminar, então nenhum timer/AbortSignal roda nesse meio-tempo. `opts.timeoutMs`
+// fica na assinatura por compat com os call-sites existentes, mas deixa de ser um limite
+// de fato imposto (o Node `spawnSync` matava o processo ao estourar `timeout`; aqui não há
+// equivalente síncrono). `env` não precisa de merge manual com o ambiente atual: o
+// `Deno.Command` herda o env do processo pai por padrão (só some se `clearEnv: true`).
 const sh = (
   cmd: string,
   opts: { readonly timeoutMs?: number; readonly env?: Readonly<Record<string, string>> } = {},
 ): ExecOk => {
-  const r = spawnSync('bash', ['-c', cmd], {
+  const { code, stdout, stderr } = new Deno.Command('bash', {
+    args: ['-c', cmd],
     cwd: PROJECT_ROOT,
-    env: { ...process.env, ...opts.env },
-    encoding: 'utf-8',
-    timeout: opts.timeoutMs ?? 30_000,
-  });
+    // `exactOptionalPropertyTypes`: omitir a chave (não setar `undefined`) quando não há env extra.
+    ...(opts.env === undefined ? {} : { env: opts.env }),
+    stdout: 'piped',
+    stderr: 'piped',
+  }).outputSync();
   return {
-    code: r.status ?? -1,
-    stdout: r.stdout ?? '',
-    stderr: r.stderr ?? '',
+    code,
+    stdout: new TextDecoder().decode(stdout),
+    stderr: new TextDecoder().decode(stderr),
   };
 };
 
@@ -80,7 +87,7 @@ const dockerDaemonAvailable = (): boolean =>
 // Sintaxe (CA-1) só exige o CLI; bootstrap (CA-2..19) exige opt-in explícito + daemon vivo.
 // O opt-in segue a convenção do repo (MYSQL_INTEGRATION/STORAGE_INTEGRATION/...): integração
 // nunca roda em `pnpm test` puro — só nos scripts `test:integration:*` que setam a env var.
-const composeIntegration = process.env['COMPOSE_INTEGRATION'] === '1';
+const composeIntegration = Deno.env.get('COMPOSE_INTEGRATION') === '1';
 const skipSyntax = dockerCliAvailable() ? false : 'Docker CLI (plugin compose) ausente no PATH';
 const skipBootstrap = !composeIntegration
   ? 'COMPOSE_INTEGRATION!=1 — rode `pnpm run test:integration:infra`'
