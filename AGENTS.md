@@ -105,21 +105,22 @@ Tickets fechados em `.claude/.pipeline/` são histórico auditável — **não d
 
 Carrega **um único** agente por turno.
 
-| Quando o tema é…                                                                  | Agente                                                                         |
-| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Roteamento + pipeline W0→W3                                                       | [`contratos-orchestrator`](./.claude/agents/contratos-orchestrator.md)         |
-| TypeScript / type system / Modules / tsconfig                                     | [`typescript-language-expert`](./.claude/agents/typescript-language-expert.md) |
-| Node.js runtime / `node:test` / ESM / signals / AsyncLocalStorage                 | [`nodejs-runtime-expert`](./.claude/agents/nodejs-runtime-expert.md)           |
-| Drizzle ORM (schema, query builder, Drizzle Kit, transações)                      | [`drizzle-orm-expert`](./.claude/agents/drizzle-orm-expert.md)                 |
-| MySQL puro (EXPLAIN, índice, locks, tuning, replicação)                           | [`mysql-database-expert`](./.claude/agents/mysql-database-expert.md)           |
-| Driver `mysql2` (pool, `caching_sha2_password`, TLS, timeouts)                    | [`mysql2-driver-expert`](./.claude/agents/mysql2-driver-expert.md)             |
-| Docker / Compose / Dockerfile / BuildKit                                          | [`docker-compose-expert`](./.claude/agents/docker-compose-expert.md)           |
-| pnpm / lockfile / supply-chain / corepack                                         | [`pnpm-workspace-expert`](./.claude/agents/pnpm-workspace-expert.md)           |
-| Fastify (borda HTTP — **ativo**, ADR-0025; UX primária, ADR-0037)                 | [`fastify-server-expert`](./.claude/agents/fastify-server-expert.md)           |
-| Nodemailer (adapter SMTP — **ativo** desde `CTR-EMAIL-ADAPTER-NODEMAILER`)        | [`nodemailer-email-expert`](./.claude/agents/nodemailer-email-expert.md)       |
-| Segurança backend web (Node/TS/Fastify/pnpm/Magalu)                               | [`security-backend-expert`](./.claude/agents/security-backend-expert.md)       |
-| Segurança frontend web (TanStack Start/React)                                     | [`security-frontend-expert`](./.claude/agents/security-frontend-expert.md)     |
-| Bruno API client (coleções `.bru` que testam a borda HTTP — **suporte, sem ADR**) | [`bruno-api-client-expert`](./.claude/agents/bruno-api-client-expert.md)       |
+| Quando o tema é…                                                                                         | Agente                                                                         |
+| -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Roteamento + pipeline W0→W3                                                                              | [`contratos-orchestrator`](./.claude/agents/contratos-orchestrator.md)         |
+| TypeScript / type system / Modules / tsconfig                                                            | [`typescript-language-expert`](./.claude/agents/typescript-language-expert.md) |
+| Node.js runtime / `node:test` / ESM / signals / AsyncLocalStorage                                        | [`nodejs-runtime-expert`](./.claude/agents/nodejs-runtime-expert.md)           |
+| Deno runtime / `deno.json` / permissões `--allow-*` / specifiers `jsr:`/`npm:` (cutover — ADR-0054/0056) | [`deno-runtime-expert`](./.claude/agents/deno-runtime-expert.md)               |
+| Drizzle ORM (schema, query builder, Drizzle Kit, transações)                                             | [`drizzle-orm-expert`](./.claude/agents/drizzle-orm-expert.md)                 |
+| MySQL puro (EXPLAIN, índice, locks, tuning, replicação)                                                  | [`mysql-database-expert`](./.claude/agents/mysql-database-expert.md)           |
+| Driver `mysql2` (pool, `caching_sha2_password`, TLS, timeouts)                                           | [`mysql2-driver-expert`](./.claude/agents/mysql2-driver-expert.md)             |
+| Docker / Compose / Dockerfile / BuildKit                                                                 | [`docker-compose-expert`](./.claude/agents/docker-compose-expert.md)           |
+| pnpm / lockfile / supply-chain / corepack                                                                | [`pnpm-workspace-expert`](./.claude/agents/pnpm-workspace-expert.md)           |
+| Fastify (borda HTTP — **ativo**, ADR-0025; UX primária, ADR-0037)                                        | [`fastify-server-expert`](./.claude/agents/fastify-server-expert.md)           |
+| Nodemailer (adapter SMTP — **ativo** desde `CTR-EMAIL-ADAPTER-NODEMAILER`)                               | [`nodemailer-email-expert`](./.claude/agents/nodemailer-email-expert.md)       |
+| Segurança backend web (Node/TS/Fastify/pnpm/Magalu)                                                      | [`security-backend-expert`](./.claude/agents/security-backend-expert.md)       |
+| Segurança frontend web (TanStack Start/React)                                                            | [`security-frontend-expert`](./.claude/agents/security-frontend-expert.md)     |
+| Bruno API client (coleções `.bru` que testam a borda HTTP — **suporte, sem ADR**)                        | [`bruno-api-client-expert`](./.claude/agents/bruno-api-client-expert.md)       |
 
 ### Skills (técnicas/disciplinas aplicadas)
 

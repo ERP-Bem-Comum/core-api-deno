@@ -1,0 +1,193 @@
+# Deno Documentation - Summary
+
+> A compact, LLM-friendly overview of the Deno docs. For a full index, use llms.txt. For full content, use llms-full.txt.
+
+## Runtime Documentation
+
+Documentation for the Deno CLI and runtime environment, including installation, configuration, and core concepts.
+
+- [Get started with Deno](https://docs.deno.com/runtime/): Install Deno and build your first project: why Deno, install, create, run, test, add a dependency, and use the built-in toolchain. No build step, no config.
+- [Build CLI apps](https://docs.deno.com/runtime/cli_apps/): Build command-line tools with Deno: read arguments and stdin, prompt the user, set exit codes, compile to a single self-contained executable, and distribute your tool.
+- [Contributing and support](https://docs.deno.com/runtime/contributing/): Guide to contributing to the Deno project and ecosystem. Learn about different Deno repositories, contribution guidelines, and how to submit effective pull requests.
+- [Dependency management](https://docs.deno.com/runtime/packages/): Use Deno as your package manager for npm and JSR: install, add, update, audit, and inspect dependencies, manage lockfiles and lifecycle scripts, and override packages.
+- [Deploying your app](https://docs.deno.com/runtime/deploy/): Ways to run a Deno app in production: the managed Deno Deploy platform, containers and Docker, cloud and serverless providers, and self-hosting a standalone binary.
+- [Desktop apps](https://docs.deno.com/runtime/desktop/): Build self-contained desktop applications from a Deno project, with framework auto-detection, hot reload, native windowing, auto-update, and cross-platform distribution.
+- [Linting and formatting](https://docs.deno.com/runtime/lint_and_format/): A guide to Deno's built-in code quality tools. Learn how to use deno lint and deno fmt commands, configure rules, integrate with CI/CD pipelines, and maintain consistent code style across your projects.
+- [Migrate from Node.js](https://docs.deno.com/runtime/migrate/): How to move a Node.js project to Deno: use Deno as a drop-in package manager, run your existing project and package.json scripts, understand how CommonJS and ES modules are resolved, and map your Node commands to Deno.
+- [Run code](https://docs.deno.com/runtime/run/): Run JavaScript and TypeScript with Deno: the secure-by-default permission model, running files, URLs and stdin, script arguments, watch mode, and project tasks.
+- [Testing](https://docs.deno.com/runtime/test/): Write and run tests with Deno's built-in test runner: assertions, test steps, hooks, filtering, and reporters, with dedicated guides for mocking, snapshots, and coverage.
+- [Reference](https://docs.deno.com/runtime/reference/): Look it up: the full deno CLI, configuration, the standard library, and runtime APIs.
+- [Deno CLI Subcommands](https://docs.deno.com/runtime/reference/cli/): The Deno CLI (Command Line Interface) allows you to interact with the Deno
+runtime environment from your terminal or command prompt. The CLI has a number
+of subcommands that can be used to perform different tasks, check the links
+below for more information on each subcommand.
+- [Deno Standard Library (@std)](https://docs.deno.com/runtime/reference/std/): The Deno Standard Library is a set of audited, dependency-free modules for common tasks, published on JSR under the @std scope.
+- [Installation](https://docs.deno.com/runtime/getting_started/installation): A Guide to installing Deno on different operating systems. Includes instructions for Windows, macOS, and Linux using various package managers, manual installation methods, and Docker containers.
+- [Set up your environment](https://docs.deno.com/runtime/getting_started/setup_your_environment): A guide to setting up your development environment for Deno. Learn how to configure popular editors like VS Code, set up language server support, and enable shell completions for better productivity.
+- [Config files](https://docs.deno.com/runtime/fundamentals/configuration): How Deno projects are configured: first-class package.json support, the deno.json file for Deno's own tooling, .jsonc support and discovery, and an overview of what you can configure. See the deno.json reference for every field.
+- [CPU profiling](https://docs.deno.com/runtime/fundamentals/cpu_profiling): Profile Deno programs with the built-in CPU profiler: collecting profiles, Markdown and flamegraph reports, Chrome DevTools analysis, and profiling tips.
+- [Cron](https://docs.deno.com/runtime/fundamentals/cron): Schedule recurring tasks in Deno with the Deno.cron() runtime API, an unstable feature enabled via --unstable-cron.
+- [Debugging](https://docs.deno.com/runtime/fundamentals/debugging): Debug Deno programs with the V8 inspector: Chrome DevTools, VS Code and JetBrains setup, network inspection, worker debugging, and the --inspect flag family.
+- [Foreign Function Interface (FFI)](https://docs.deno.com/runtime/fundamentals/ffi): Learn how to use Deno's Foreign Function Interface (FFI) to call native libraries directly from JavaScript or TypeScript. Includes examples, best practices, and security considerations.
+- [Modules](https://docs.deno.com/runtime/fundamentals/modules): Learn how Deno's ECMAScript module system works: importing local and third-party modules, import attributes, import maps, and supported import types such as Wasm and data URLs.
+- [Node and npm Compatibility](https://docs.deno.com/runtime/fundamentals/node): Guide to using Node.js modules and npm packages in Deno. Learn about compatibility features, importing npm packages, and differences between Node.js and Deno environments.
+- [OpenTelemetry](https://docs.deno.com/runtime/fundamentals/open_telemetry): Learn how to implement observability in Deno applications using OpenTelemetry. Covers tracing, metrics collection, and integration with monitoring systems.
+- [Security and permissions](https://docs.deno.com/runtime/fundamentals/security): A guide to Deno's security model: secure-by-default execution, the permission sandbox, evaluating and executing untrusted code, and the permission broker. See the Permissions reference for the flags.
+- [Stability and releases](https://docs.deno.com/runtime/fundamentals/stability_and_releases): Guide to Deno's stability guarantees and release process. Covering release channels, long-term support (LTS), unstable features, versioning policy, and how Deno maintains backward compatibility.
+- [TypeScript support](https://docs.deno.com/runtime/fundamentals/typescript): TypeScript is a first-class language in Deno. Run .ts files directly with no build step, type-check with deno check, reuse your tsconfig.json, and skip the toolchain you needed under Node.js.
+
+## Deploy Documentation
+
+Documentation for Deno Deploy, a serverless platform for deploying JavaScript to a global edge network.
+
+- [About Deno Deploy](https://docs.deno.com/deploy/): Guide to Deno Deploy features, comparison with Deploy Classic, and getting started instructions for deployment.
+- [Deno KV Quick Start](https://docs.deno.com/deploy/kv/): Deno KV is a
+[key-value database](https://en.wikipedia.org/wiki/Key%E2%80%93value_database)
+built directly into the Deno runtime, available in the
+[`Deno.Kv` namespace](https://docs.deno.com/api/deno/~/Deno.Kv). It can be used
+for many kinds of data storage use cases, but excels at storing simple data
+structures that benefit from very fast reads and writes. Deno KV is available in
+the Deno CLI and on [Deno Deploy](/deploy/reference/deno_kv/).
+- [Deploy Classic](https://docs.deno.com/deploy/classic/): :::warning Sunsetting on July 20, 2026
+- [Support and Feedback](https://docs.deno.com/deploy/support/): If you have any questions or feedback about Deno Deploy, please reach out to us
+on the [Deno Discord](https://discord.gg/deno) in the `#deploy` channel or send
+an email to support@deno.com.
+- [API Reference](https://docs.deno.com/deploy/classic/api/): :::warning Sunsetting on July 20, 2026
+- [Acceptable use policy](https://docs.deno.com/deploy/acceptable_use_policy): What constitutes acceptable use of Deno Deploy Classic.
+- [Deno Deploy changelog](https://docs.deno.com/deploy/changelog): Listing notable progress in the development and evolution of Deno Deploy
+- [Deno Deploy Usage Guidelines](https://docs.deno.com/deploy/usage): Important limitations, service level expectations, and terms of use for Deno Deploy.
+- [Fulfillment Policy](https://docs.deno.com/deploy/fulfillment_policy): Our policies regarding refunds and cancellations for Deno Deploy.
+- [Getting started](https://docs.deno.com/deploy/getting_started): Step-by-step guide to creating and configuring your first Deno Deploy application, including organization setup, build configuration, environment variables, and deployment monitoring.
+- [Migrating from Deploy Classic to Deno Deploy](https://docs.deno.com/deploy/migration_guide): Guide to migrating your applications from Deno Deploy Classic (dash.deno.com) to the new Deno Deploy (console.deno.com), including subhosting API migration.
+- [Pricing and limitations](https://docs.deno.com/deploy/pricing_and_limits): Important limitations, service level expectations, and terms of use for Deno Deploy.
+- [Privacy Policy](https://docs.deno.com/deploy/privacy_policy): Deno's Privacy Policy
+- [Security and responsible disclosure](https://docs.deno.com/deploy/security): How to report security vulnerabilities in Deno Deploy.
+- [Terms and Conditions](https://docs.deno.com/deploy/terms_and_conditions): Deno Terms and Conditions
+- [Application logging](https://docs.deno.com/deploy/classic/logs): :::warning Sunsetting on July 20, 2026
+- [Backups](https://docs.deno.com/deploy/kv/backup): KV databases hosted on Deno Deploy can be continuously backed up to your own
+S3-compatible storage buckets. This is in addition to the replication and
+backups that we internally perform for all data stored in hosted Deno KV
+databases to ensure high availability and data durability.
+- [CI and GitHub Actions](https://docs.deno.com/deploy/classic/ci_github): :::warning Sunsetting on July 20, 2026
+- [Connect to DynamoDB](https://docs.deno.com/deploy/classic/dynamodb): :::warning Sunsetting on July 20, 2026
+- [Connect to Firebase](https://docs.deno.com/deploy/classic/firebase): :::warning Sunsetting on July 20, 2026
+- [Connect to Neon Postgres](https://docs.deno.com/deploy/classic/neon-postgres): :::warning Sunsetting on July 20, 2026
+- [Connect to Postgres](https://docs.deno.com/deploy/classic/postgres): :::warning Sunsetting on July 20, 2026
+- [Connect to Prisma Postgres](https://docs.deno.com/deploy/classic/prisma-postgres): :::warning Sunsetting on July 20, 2026
+- [Custom domains](https://docs.deno.com/deploy/classic/custom-domains): :::warning Sunsetting on July 20, 2026
+- [Data Modeling in TypeScript](https://docs.deno.com/deploy/kv/data_modeling_typescript): In TypeScript applications, it is usually desirable to create strongly-typed,
+well-documented objects to contain the data that your application operates on.
+Using [interfaces](https://www.typescriptlang.org/docs/handbook/2/objects.html)
+or [classes](https://www.typescriptlang.org/docs/handbook/2/classes.html), you
+can describe both the shape and behavior of objects in your programs.
+- [Deploy with GitHub integration](https://docs.deno.com/deploy/classic/how-to-deploy): :::warning Sunsetting on July 20, 2026
+
+## Sandbox Documentation
+
+Documentation for Deno Sandbox, ephemeral Linux microVMs for running untrusted code safely.
+
+- [Deno Sandbox](https://docs.deno.com/sandbox/): Overview of the Deno Sandbox microVM platform on Deploy, including capabilities, security model, and ideal use cases.
+- [Create a Deno Sandbox](https://docs.deno.com/sandbox/create): Learn how to provision a sandbox with the static Sandbox.create() method and configure runtime, network, and lifecycle options.
+- [Expose HTTP](https://docs.deno.com/sandbox/expose_http): Learn how to expose HTTP endpoints from Deno Sandbox, enabling you to run web servers, APIs, and preview environments at the edge.
+- [Getting started](https://docs.deno.com/sandbox/getting_started): Step-by-step walkthrough for enabling Deno Sandbox, creating your first microVM, running commands, exposing services, and managing secrets.
+- [Management via CLI](https://docs.deno.com/sandbox/cli): How to manage Deno Sandbox with the Deno CLI.
+- [Programmatic management of Deno Deploy Apps](https://docs.deno.com/sandbox/apps): Use the @deno/sandbox Client to create, list, update, and delete Deno Deploy apps programmatically.
+- [Promote Deno Sandbox to Deploy Apps](https://docs.deno.com/sandbox/promote): Learn how to promote a sandbox to a full Deno Deploy app for production use.
+- [Sandbox Timeouts](https://docs.deno.com/sandbox/timeouts): Understand how long Deno Sandbox stays alive, how to extend or reconnect to them, and when to promote work to a Deno Deploy app.
+- [Security](https://docs.deno.com/sandbox/security): Understand the defense-in-depth model behind Deno Sandbox: isolation, secrets, network controls, and auditing.
+- [SSH](https://docs.deno.com/sandbox/ssh): How to open secure SSH access into a sandbox for interactive debugging, editor sessions, or long-running processes.
+- [Volumes & Snapshots](https://docs.deno.com/sandbox/volumes): Persistent storage and bootable images for Deno Sandbox
+
+## Examples Documentation
+
+Code examples and tutorials demonstrating how to build applications with Deno.
+
+- [Add and remove dependencies](https://docs.deno.com/examples/add_remove_dependencies_tutorial/): Manage project dependencies with deno add and deno remove: npm and JSR packages, version pinning, dev dependencies, and aliasing packages in your import map.
+- [Behavior-Driven Development (BDD)](https://docs.deno.com/examples/bdd_tutorial/): Implementing Behavior-Driven Development with Deno's Standard Library's BDD module. Create readable, well organised tests with effective assertions.
+- [Better debugging with the console API](https://docs.deno.com/examples/debugging_with_console_tutorial/): An in-depth guide to advanced console debugging in Deno. Learn about console.table, timers, counters, tracers, and how to leverage the full console API beyond basic logging for better debugging workflows.
+- [Boot a Python environment with snapshots](https://docs.deno.com/examples/snapshot_python_tutorial/): Create a sandbox, preload Python + scientific packages, snapshot it, and boot zero-setup sandboxes that run a Mandelbrot explorer.
+- [Build a Database App with Drizzle ORM and Deno](https://docs.deno.com/examples/drizzle_tutorial/): Step-by-step guide to building database applications with Drizzle ORM and Deno. Learn about schema management, type-safe queries, PostgreSQL integration, migrations, and how to implement CRUD operations.
+- [Build a Fresh App](https://docs.deno.com/examples/fresh_tutorial/): Complete guide to building Full-stack applications with Fresh and Deno. Learn how to set up a project, implement server-side rendering with islands architecture, add API routes, and deploy your TypeScript application.
+- [Build a Next.js App](https://docs.deno.com/examples/next_tutorial/): Walkthrough guide to building a Next.js application with Deno. Learn how to set up a project, create API routes, implement server-side rendering, and build a full-stack TypeScript application.
+- [Build a Nuxt app with Deno](https://docs.deno.com/examples/nuxt_tutorial/): Step-by-step guide to building Nuxt applications with Deno. Learn how to create a full-stack Vue.js app, implement server-side rendering, add Tailwind styling, and deploy your application.
+- [Build a Real-time LLM Chat App with Deno](https://docs.deno.com/examples/llm_tutorial/): Learn how to integrate Large Language Models (LLM) with Deno to create an interactive roleplay chat application with AI characters using OpenAI or Anthropic APIs.
+- [Build a SolidJS app with Deno](https://docs.deno.com/examples/solidjs_tutorial/): Build a SolidJS application with Deno. Learn how to set up a project, implement reactive components, handle routing, create API endpoints with Hono, and build a full-stack TypeScript application.
+- [Build a SvelteKit App](https://docs.deno.com/examples/svelte_tutorial/): A tutorial on building SvelteKit applications with Deno. Learn how to set up a SvelteKit project, implement file-based routing, manage state with load functions, and create a full-stack TypeScript application.
+- [Build a Typesafe API with tRPC and Deno](https://docs.deno.com/examples/trpc_tutorial/): A guide to building type-safe APIs with tRPC and Deno. Learn how to set up endpoints, implement RPC procedures, handle data validation, and create efficient client-server applications.
+- [Build a Vue.js App](https://docs.deno.com/examples/vue_tutorial/): A tutorial on building Vue.js applications with Deno. Learn how to set up a Vite project, implement component architecture, add routing, manage state, and create a full-stack TypeScript application.
+- [Build an app with Tanstack and Deno](https://docs.deno.com/examples/tanstack_tutorial/): Complete guide to building applications with Tanstack and Deno. Learn how to implement Query for data fetching, Router for navigation, manage server state, and create type-safe full-stack applications.
+- [Build Astro with Deno](https://docs.deno.com/examples/astro_tutorial/): Step-by-step tutorial on building web applications with Astro and Deno. Learn how to scaffold projects, create dynamic pages, implement SSR, and deploy your Astro sites using Deno's Node.js compatibility.
+- [Build Qwik with Deno](https://docs.deno.com/examples/qwik_tutorial/): Step-by-step guide to building Qwik applications with Deno. Learn about resumability, server-side rendering, route handling, and how to create fast, modern web applications with zero client-side JavaScript by default.
+- [Building a SvelteKit app with sv and Deno](https://docs.deno.com/examples/sveltekit_tutorial/): SvelteKit has been a stable popular vote since its launch and with Svelte
+version 5 releasing recently, as of time of writing, there isn't a better time
+to show off running it with Deno!
+- [Building a word finder app with Deno](https://docs.deno.com/examples/word_finder_tutorial/): A tutorial on creating a word search application with Deno. Learn how to build a web server, implement pattern matching, handle HTTP requests, and create an interactive web interface using Oak framework.
+- [Chat application with WebSockets](https://docs.deno.com/examples/chat_app_tutorial/): A tutorial on building a real-time chat app using Deno WebSockets. Learn how to create a WebSocket server with Oak, handle multiple client connections, manage state, and build an interactive chat interface with HTML, CSS, and JavaScript.
+- [Configure a monorepo with workspaces](https://docs.deno.com/examples/workspaces_monorepo_tutorial/): Set up a Deno workspace with multiple packages: member names and exports, glob patterns, root-only options, shared imports, and centralized dependency versions with catalogs.
+- [Connect a Database to your local dev](https://docs.deno.com/examples/tunnel_database_tutorial/): Connect a Postgres database to your local development server with Deno Deploy and Deno's tunnel feature
+- [Connecting to databases](https://docs.deno.com/examples/connecting_to_databases_tutorial/): A guide to database connectivity in Deno. Learn how to use MySQL, PostgreSQL, MongoDB, SQLite, Firebase, Supabase, and popular ORMs to build data-driven applications with TypeScript.
+- [Creating a subprocess](https://docs.deno.com/examples/subprocess_tutorial/): A guide to working with subprocesses in Deno. Learn how to spawn processes, handle input/output streams, manage process lifecycles, and implement inter-process communication patterns safely.
+- [Deno Sandbox Snapshots Tutorial](https://docs.deno.com/examples/snapshots_tutorial/): Use read only images to create isolated and reproducible environments.
+- [Deno Sandbox Volumes Tutorial](https://docs.deno.com/examples/volumes_tutorial/): Add read-write block storage to your Deno sandbox.
+
+## Subhosting Documentation
+
+Documentation for Deno Subhosting, a platform for securely running code written by customers.
+
+- [subhosting/index.md](https://docs.deno.com/subhosting/)
+- [About Subhosting](https://docs.deno.com/subhosting/manual/): :::warning Sunsetting on July 20, 2026
+- [Subhosting Resources](https://docs.deno.com/subhosting/api/): :::warning Sunsetting on July 20, 2026
+- [Acceptable use policy](https://docs.deno.com/subhosting/manual/acceptable_use_policy): :::warning Sunsetting on July 20, 2026
+- [Deployment events](https://docs.deno.com/subhosting/manual/events): :::warning Sunsetting on July 20, 2026
+- [Migrating from subhosting API v1 to v2](https://docs.deno.com/subhosting/manual/api_migration_guide): Detailed guide for migrating from the Deno Deploy subhosting API v1 to v2, covering endpoint changes, deployment model differences, and new features like labels and layers.
+- [Planning your implementation](https://docs.deno.com/subhosting/manual/planning_your_implementation): :::warning Sunsetting on July 20, 2026
+- [Pricing and Limits](https://docs.deno.com/subhosting/manual/pricing_and_limits): Overview of Deno Subhosting pricing plans, resource limits, deployment restrictions, and performance constraints for your applications.
+- [Subhosting Quick Start](https://docs.deno.com/subhosting/manual/quick_start): :::warning Sunsetting on July 20, 2026
+- [Authentication](https://docs.deno.com/subhosting/api/authentication): :::warning Sunsetting on July 20, 2026
+
+## Lint Documentation
+
+Documentation for Deno's built-in linter and formatter, including available rules and configuration.
+
+- [lint/rules/adjacent-overload-signatures.md](https://docs.deno.com/lint/rules/adjacent-overload-signatures): Requires overload signatures to be adjacent to each other.
+- [lint/rules/ban-ts-comment.md](https://docs.deno.com/lint/rules/ban-ts-comment): Disallows the use of Typescript directives without a comment.
+- [lint/rules/ban-types.md](https://docs.deno.com/lint/rules/ban-types): Bans the use of primitive wrapper objects (e.g. `String` the object is a wrapper
+of `string` the primitive) in addition to the non-explicit `Function` type and
+the misunderstood `Object` type.
+- [lint/rules/ban-unknown-rule-code.md](https://docs.deno.com/lint/rules/ban-unknown-rule-code): Warns the usage of unknown rule codes in ignore directives.
+- [lint/rules/ban-untagged-ignore.md](https://docs.deno.com/lint/rules/ban-untagged-ignore): Requires `deno-lint-ignore` to be annotated with one or more rule names.
+- [lint/rules/ban-untagged-todo.md](https://docs.deno.com/lint/rules/ban-untagged-todo): Requires TODOs to be annotated with either a user tag (`@user`) or an issue
+reference (`#issue`).
+- [lint/rules/ban-unused-ignore.md](https://docs.deno.com/lint/rules/ban-unused-ignore): Warns unused ignore directives.
+- [lint/rules/camelcase.md](https://docs.deno.com/lint/rules/camelcase): Enforces the use of camelCase in variable names.
+- [lint/rules/constructor-super.md](https://docs.deno.com/lint/rules/constructor-super): Verifies the correct usage of constructors and calls to `super()`.
+- [lint/rules/default-param-last.md](https://docs.deno.com/lint/rules/default-param-last): Enforces default parameter(s) to be last in the function signature.
+- [lint/rules/eqeqeq.md](https://docs.deno.com/lint/rules/eqeqeq): Enforces the use of type-safe equality operators `===` and `!==` instead of the
+more error prone `==` and `!=` operators.
+- [lint/rules/explicit-function-return-type.md](https://docs.deno.com/lint/rules/explicit-function-return-type): Requires all functions to have explicit return types.
+- [lint/rules/explicit-module-boundary-types.md](https://docs.deno.com/lint/rules/explicit-module-boundary-types): Requires all module exports to have fully typed declarations.
+- [lint/rules/for-direction.md](https://docs.deno.com/lint/rules/for-direction): Requires `for` loop control variables to increment in the correct direction.
+- [lint/rules/fresh-handler-export.md](https://docs.deno.com/lint/rules/fresh-handler-export): Checks correct naming for named fresh middleware export.
+- [lint/rules/fresh-server-event-handlers.md](https://docs.deno.com/lint/rules/fresh-server-event-handlers): Disallows event handlers in fresh server components.
+- [lint/rules/getter-return.md](https://docs.deno.com/lint/rules/getter-return): Requires all property getter functions to return a value.
+- [lint/rules/guard-for-in.md](https://docs.deno.com/lint/rules/guard-for-in): Require `for-in` loops to include an `if` statement.
+- [lint/rules/jsx-boolean-value.md](https://docs.deno.com/lint/rules/jsx-boolean-value): Enforce a consistent JSX boolean value style. Passing `true` as the boolean
+value can be omitted with the shorthand syntax.
+- [lint/rules/jsx-button-has-type.md](https://docs.deno.com/lint/rules/jsx-button-has-type): Enforce `` elements to have a `type` attribute. If a `` is
+placed inside a `` element it will act as a submit button by default which
+can be unexpected.
+- [lint/rules/jsx-curly-braces.md](https://docs.deno.com/lint/rules/jsx-curly-braces): Ensure consistent use of curly braces around JSX expressions.
+- [lint/rules/jsx-key.md](https://docs.deno.com/lint/rules/jsx-key): Ensure the `key` attribute is present when passing iterables into JSX. It allows
+frameworks to optimize checking the order of elements.
+- [lint/rules/jsx-no-children-prop.md](https://docs.deno.com/lint/rules/jsx-no-children-prop): Pass children as JSX children instead of as an attribute.
+- [lint/rules/jsx-no-comment-text-nodes.md](https://docs.deno.com/lint/rules/jsx-no-comment-text-nodes): JavaScript comments inside text nodes are rendered as plain text in JSX. This is
+often unexpected.
+- [lint/rules/jsx-no-duplicate-props.md](https://docs.deno.com/lint/rules/jsx-no-duplicate-props): Disallow duplicated JSX props. Later props will always overwrite earlier props
+often leading to unexpected results.
+
+## Optional
+
+- [Contribution Guidelines](https://docs.deno.com/runtime/contributing): How to contribute to Deno
+- [Style Guide](https://docs.deno.com/runtime/contributing/style_guide): Coding style guidelines for Deno
+- [Release Schedule](https://docs.deno.com/runtime/contributing/release_schedule): Deno's release cadence and versioning
+- [Deno LLM Skills](https://github.com/denoland/skills): Skills and playbooks for LLMs and AI agents working with Deno
