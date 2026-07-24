@@ -15,9 +15,7 @@
 
 import { describe, it, before, after } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
-import process from 'node:process';
 import { eq } from 'drizzle-orm';
 
 import { openAuthMysql } from '#src/modules/auth/adapters/persistence/drivers/mysql-driver.ts';
@@ -28,32 +26,33 @@ import { moduleDir } from '#src/shared/module-dir.ts';
 
 const REPO_ROOT = resolve(moduleDir(import.meta.url), '..', '..', '..');
 const SEED = resolve(REPO_ROOT, 'scripts', 'seed', 'admin-user.ts');
-const CONN = process.env['AUTH_SYNC_TEST_DATABASE_URL'] ?? '';
+const CONN = Deno.env.get('AUTH_SYNC_TEST_DATABASE_URL') ?? '';
 
 // E-mail próprio deste teste: coexiste com o que os testes irmãos deixarem no banco.
 const EMAIL = 'seed-delegation-462@example.com';
 
-const enabled = (): boolean => process.env['MYSQL_INTEGRATION'] === '1' && CONN.length > 0;
+const enabled = (): boolean => Deno.env.get('MYSQL_INTEGRATION') === '1' && CONN.length > 0;
 
-const runSeed = async (): Promise<number> =>
-  new Promise<number>((settle) => {
-    const child = spawn(process.execPath, ['--experimental-strip-types', '--no-warnings', SEED], {
-      cwd: REPO_ROOT,
-      stdio: 'ignore',
-      env: {
-        PATH: process.env['PATH'] ?? '',
-        AUTH_DATABASE_URL: CONN,
-        ADMIN_EMAIL: EMAIL,
-        ADMIN_PASSWORD: 'Senha-Muito-Forte-462!',
-        ADMIN_NAME: 'Admin Delegacao',
-        ADMIN_CPF: '52998224725',
-        ADMIN_PHONE: '11999998888',
-      },
-    });
-    child.on('close', (code) => {
-      settle(code ?? -1);
-    });
-  });
+const runSeed = async (): Promise<number> => {
+  const { code } = await new Deno.Command(Deno.execPath(), {
+    args: ['run', '-A', SEED],
+    cwd: REPO_ROOT,
+    // env explícito e isolado (o spawn passava um objeto `env` completo, que substitui o ambiente).
+    clearEnv: true,
+    env: {
+      PATH: Deno.env.get('PATH') ?? '',
+      AUTH_DATABASE_URL: CONN,
+      ADMIN_EMAIL: EMAIL,
+      ADMIN_PASSWORD: 'Senha-Muito-Forte-462!',
+      ADMIN_NAME: 'Admin Delegacao',
+      ADMIN_CPF: '52998224725',
+      ADMIN_PHONE: '11999998888',
+    },
+    stdout: 'null',
+    stderr: 'null',
+  }).output();
+  return code;
+};
 
 if (enabled()) {
   let handle: AuthMysqlHandle | null = null;

@@ -19,7 +19,6 @@
 
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { execFile } from 'node:child_process';
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -97,25 +96,6 @@ const makePipelineRoot = async (): Promise<string> => {
 // CLI E2E helpers (mesmo pattern de tests/pipeline/state-cli.test.ts)
 // ──────────────────────────────────────────────────────────────────────────────
 
-const execFileAsync = async (
-  file: string,
-  args: readonly string[],
-  options: { cwd: string },
-): Promise<{ stdout: string; stderr: string }> => {
-  return await new Promise((resolveFn, rejectFn) => {
-    execFile(file, [...args], options, (error, stdout, stderr) => {
-      if (error === null) {
-        resolveFn({ stdout, stderr });
-        return;
-      }
-      const wrapped = error as Error & { stdout?: string; stderr?: string };
-      wrapped.stdout = stdout;
-      wrapped.stderr = stderr;
-      rejectFn(wrapped);
-    });
-  });
-};
-
 const here = fileURLToPath(new URL('.', import.meta.url));
 const repoRoot = resolve(here, '..', '..');
 const cliPath = resolve(repoRoot, 'scripts', 'pipeline', 'dashboard-cli.ts');
@@ -123,17 +103,17 @@ const cliPath = resolve(repoRoot, 'scripts', 'pipeline', 'dashboard-cli.ts');
 type RunResult = Readonly<{ code: number; stdout: string; stderr: string }>;
 
 const runCli = async (cwd: string, args: readonly string[]): Promise<RunResult> => {
-  try {
-    const { stdout, stderr } = await execFileAsync(
-      process.execPath,
-      ['--experimental-strip-types', '--no-warnings', cliPath, ...args],
-      { cwd },
-    );
-    return { code: 0, stdout, stderr };
-  } catch (e) {
-    const err = e as { code?: number; stdout?: string; stderr?: string };
-    return { code: err.code ?? 1, stdout: err.stdout ?? '', stderr: err.stderr ?? '' };
-  }
+  const { code, stdout, stderr } = await new Deno.Command(Deno.execPath(), {
+    args: ['run', '-A', cliPath, ...args],
+    cwd,
+    stdout: 'piped',
+    stderr: 'piped',
+  }).output();
+  return {
+    code,
+    stdout: new TextDecoder().decode(stdout),
+    stderr: new TextDecoder().decode(stderr),
+  };
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
