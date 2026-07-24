@@ -71,8 +71,10 @@ ganhou `compilerOptions` (`types:[]` desliga o @types/node que estragava o `Impo
 divergência `import.meta.dirname` (Deno `string|undefined` vs tsc `string`). Node 4307/0.
 
 **Achados/follow-ups pendentes da Etapa 4:**
-- **Adaptar 17 testes de spawn** — `spawn(process.execPath, [flags-node])` falha sob `deno test`
-  (execPath=deno, flags do Node inválidas). Adaptar a invocação Node→Deno.
+- ~~Adaptar 17 testes de spawn~~ — **CORREÇÃO:** os spawn-tests **passam** sob `deno test` com
+  `--allow-run` (o `deno` tolera as flags Node e roda o script). O claim anterior de "falham -1" veio
+  de rodar sem `--allow-run`. Migrar para `Deno.Command` vira **refactor Deno-first opcional**
+  (idiomático + permission-gated + robustez), não bug-fix. Ver `DENO-SUBPROCESS-COMMAND/002-tests`.
 - **Remover o package-manager** — deletar package.json/pnpm-lock/pnpm-workspace + migrar 81 scripts→task.
 - **Docker** (denoland/deno), **3 CI workflows**, **4 git-hooks** — flipar de pnpm/node p/ deno.
 - Hook `block-npm.sh` colide com o texto "npm" solto (não com o specifier `npm:`, que passa) —

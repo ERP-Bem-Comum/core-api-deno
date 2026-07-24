@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "ticket": "DENO-SUBPROCESS-COMMAND",
+  "size": "L",
+  "createdAt": "2026-07-24T20:03:11.870Z",
+  "closedAt": null,
+  "currentWave": "W0",
+  "status": "in-progress",
+  "waves": [
+    {
+      "id": "W0",
+      "status": "in-progress",
+      "agent": "deno-runtime-expert",
+      "startedAt": "2026-07-24T20:03:12.211Z",
+      "finishedAt": null,
+      "rounds": 1,
+      "reportPath": null,
+      "outcome": null
+    },
+    {
+      "id": "W1",
+      "status": "pending",
+      "agent": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "rounds": 1,
+      "reportPath": null,
+      "outcome": null
+    },
+    {
+      "id": "W2",
+      "status": "pending",
+      "agent": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "rounds": 1,
+      "reportPath": null,
+      "outcome": null
+    },
+    {
+      "id": "W3",
+      "status": "pending",
+      "agent": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "rounds": 1,
+      "reportPath": null,
+      "outcome": null
+    }
+  ],
+  "blockers": [],
+  "lastEvent": "W0 started (deno-runtime-expert)"
+}
