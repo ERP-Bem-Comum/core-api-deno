@@ -17,14 +17,20 @@ Cada etapa: `deno test` verde + assinatura ≥ baseline antes de avançar.
 
 ## As 4 etapas (sequenciadas, cada uma um ticket W0→W3 sob Deno)
 
-### Etapa 1 — Tooling (destrava tudo)
-- `deno.json` assume `#src/*` e `#scripts/*` (hoje em `package.json#imports`) via `imports` map.
-- `deno.json` `tasks` cobrem serve/workers/jobs/test (já esboçado no manifesto least-privilege).
-- Remove a dependência do `--experimental-strip-types` (Deno roda `.ts` nativo).
-- **Verifica:** `deno test` verde sem `package.json` no path de resolução.
-- **Destrava:** as etapas 2–4.
+### Etapa 1 — Tooling (destrava tudo) ✅ CONCLUÍDA (`DENO-CUTOVER-TOOLING`, closed-green)
+- `deno.json` assume `#src/` e `#scripts/` via `imports` map (**trailing-slash**, não o glob `#src/*`).
+- `deno.json` `tasks` cobrem serve/workers/jobs/test (manifesto least-privilege).
+- `.ts` roda nativo (sem `--experimental-strip-types`).
+- **Verificado:** `DENO_NO_PACKAGE_JSON=1 deno check` GREEN; Node 4307/0 + Deno modules 1033/0.
 
-### Etapa 2 — Dependências (JSR onde bom, `npm:` no resto)
+### Etapa 2 — Dependências (JSR onde bom, `npm:` no resto) ✅ CONCLUÍDA (`DENO-CUTOVER-DEPS`, closed-green)
+
+Feito: 19 specifiers externos no `deno.json#imports` (`jsr:@panva/jose`; `npm:` no resto; **zod fica
+`npm:`** — dual-package). `deno.lock` gerado (re-resolução deliberada, auditada). Verificado: resolução
+169→0, Fastify+zod+openapi funcionais, Node 4307/0, Deno modules+shared 1084/0, `deno audit` triado
+(2 vulns `@fastify/static` pré-existentes, paridade-ou-melhor vs pnpm). `@std/*` deferido (follow-up).
+
+Tabela original (referência):
 | Camada | Alvo | Flag |
 | --- | --- | --- |
 | JWT | `jsr:@panva/jose` | 🟢 oficial |
@@ -49,8 +55,15 @@ Cada etapa: `deno test` verde + assinatura ≥ baseline antes de avançar.
 - Docker: imagem `denoland/deno` + `deno cache`; remove corepack/pnpm/node_modules/tini-Node.
 - **Delete:** `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, os `#experimental-strip-types`.
 - Supply-chain: `deno approve-scripts` + `minimumDependencyAge` + `deno audit` substituem o
-  hardening pnpm (ADR-0011).
+  hardening pnpm (ADR-0011). Carregar p/ o Deno os overrides do pnpm que ainda importarem
+  (esbuild/fast-uri/brace-expansion — hoje o `deno audit` já não acusa nenhum, mas monitorar).
 - **Verifica:** build da imagem Deno sobe o app; deploy no x99.
+
+**Achados carregados das Etapas 1-2 (endereçar aqui):**
+- `import.meta.url` → 6× `TS2339` sob `deno check` (pré-existente; type-check difere do `tsc`+@types/node).
+  Ao trocar o gate de tipo `tsc`→`deno check`, resolver via `compilerOptions` no `deno.json`.
+- Hook `block-npm.sh` **colide com o specifier `npm:`** (bloqueia `deno info npm:x`, `grep '"npm":'`…).
+  Ensinar o hook a distinguir o **CLI `npm`** do **specifier `npm:` do Deno** antes de remover o pnpm.
 
 ## Dependências
 

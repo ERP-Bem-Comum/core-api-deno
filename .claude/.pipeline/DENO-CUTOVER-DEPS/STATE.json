@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "ticket": "DENO-CUTOVER-DEPS",
+  "size": "M",
+  "createdAt": "2026-07-24T18:13:01.507Z",
+  "closedAt": "2026-07-24T18:29:01.366Z",
+  "currentWave": null,
+  "status": "closed-green",
+  "waves": [
+    {
+      "id": "W0",
+      "status": "done",
+      "agent": "deno-runtime-expert",
+      "startedAt": "2026-07-24T18:13:44.290Z",
+      "finishedAt": "2026-07-24T18:14:13.130Z",
+      "rounds": 1,
+      "reportPath": "002-tests/REPORT.md",
+      "outcome": "RED"
+    },
+    {
+      "id": "W1",
+      "status": "done",
+      "agent": "deno-runtime-expert",
+      "startedAt": "2026-07-24T18:14:13.482Z",
+      "finishedAt": "2026-07-24T18:21:01.435Z",
+      "rounds": 1,
+      "reportPath": "003-impl/REPORT.md",
+      "outcome": "GREEN"
+    },
+    {
+      "id": "W2",
+      "status": "done",
+      "agent": "code-reviewer",
+      "startedAt": "2026-07-24T18:21:01.770Z",
+      "finishedAt": "2026-07-24T18:22:19.861Z",
+      "rounds": 1,
+      "reportPath": "004-code-review/REVIEW.md",
+      "outcome": "APPROVED"
+    },
+    {
+      "id": "W3",
+      "status": "done",
+      "agent": "ts-quality-checker",
+      "startedAt": "2026-07-24T18:22:20.198Z",
+      "finishedAt": "2026-07-24T18:29:01.032Z",
+      "rounds": 1,
+      "reportPath": "005-quality/REPORT.md",
+      "outcome": "GREEN"
+    }
+  ],
+  "blockers": [],
+  "lastEvent": "closed-green"
+}

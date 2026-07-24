@@ -5,7 +5,38 @@
   // autoridade de resolução do package.json#imports para cá; o package.json sai na Etapa 4.
   "imports": {
     "#src/": "./src/",
-    "#scripts/": "./scripts/"
+    "#scripts/": "./scripts/",
+
+    // Deps externas (Etapa 2 do cutover, DENO-CUTOVER-DEPS). jsr: onde há alternativa boa (jose);
+    // npm: no resto. zod fica npm: — mapear p/ jsr criaria 2 cópias e racharia o registry global do
+    // Zod v4, quebrando o OpenAPI (ADR-0027). Subpaths precisam do par bare + trailing-slash.
+    "jose": "jsr:@panva/jose@^6.2.3",
+
+    "fastify": "npm:fastify@5.8.5",
+    "@fastify/cors": "npm:@fastify/cors@11.2.0",
+    "@fastify/helmet": "npm:@fastify/helmet@13.0.2",
+    "@fastify/rate-limit": "npm:@fastify/rate-limit@10.3.0",
+    "@fastify/swagger": "npm:@fastify/swagger@9.7.0",
+    "@fastify/swagger-ui": "npm:@fastify/swagger-ui@5.2.6",
+    "fastify-zod-openapi": "npm:fastify-zod-openapi@5.6.1",
+
+    "zod": "npm:zod@4.4.3",
+    "zod/": "npm:/zod@4.4.3/",
+    "zod-openapi": "npm:zod-openapi@5.4.6",
+
+    "drizzle-orm": "npm:drizzle-orm@0.45.2",
+    "drizzle-orm/": "npm:/drizzle-orm@0.45.2/",
+    "mysql2": "npm:mysql2@^3.22.3",
+    "mysql2/": "npm:/mysql2@^3.22.3/",
+
+    "@aws-sdk/client-s3": "npm:@aws-sdk/client-s3@^3.1052.0",
+    "@aws-sdk/s3-request-presigner": "npm:@aws-sdk/s3-request-presigner@^3.1052.0",
+
+    "nodemailer": "npm:nodemailer@^9.0.1",
+    "resend": "npm:resend@^6.12.4",
+    "fast-xml-parser": "npm:fast-xml-parser@5.7.3",
+    "unpdf": "npm:unpdf@1.6.2",
+    "hash-wasm": "npm:hash-wasm@^4.12.0"
   },
   // Manifesto de permissões least-privilege para o port Node → Deno (inquiry 0023).
   // Cada flag foi DERIVADA da superfície real de capabilities de `src/` e VALIDADA
