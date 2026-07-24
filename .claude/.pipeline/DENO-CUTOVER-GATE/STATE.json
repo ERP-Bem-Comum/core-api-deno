@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "ticket": "DENO-CUTOVER-GATE",
+  "size": "L",
+  "createdAt": "2026-07-24T18:56:36.093Z",
+  "closedAt": null,
+  "currentWave": "W1",
+  "status": "in-progress",
+  "waves": [
+    {
+      "id": "W0",
+      "status": "done",
+      "agent": "deno-runtime-expert",
+      "startedAt": "2026-07-24T18:59:02.970Z",
+      "finishedAt": "2026-07-24T18:59:23.199Z",
+      "rounds": 1,
+      "reportPath": "002-tests/REPORT.md",
+      "outcome": "RED"
+    },
+    {
+      "id": "W1",
+      "status": "in-progress",
+      "agent": "deno-runtime-expert",
+      "startedAt": "2026-07-24T18:59:23.551Z",
+      "finishedAt": null,
+      "rounds": 1,
+      "reportPath": null,
+      "outcome": null
+    },
+    {
+      "id": "W2",
+      "status": "pending",
+      "agent": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "rounds": 1,
+      "reportPath": null,
+      "outcome": null
+    },
+    {
+      "id": "W3",
+      "status": "pending",
+      "agent": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "rounds": 1,
+      "reportPath": null,
+      "outcome": null
+    }
+  ],
+  "blockers": [],
+  "lastEvent": "W1 started (deno-runtime-expert)"
+}
