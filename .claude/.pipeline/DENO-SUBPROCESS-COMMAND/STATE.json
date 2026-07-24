@@ -4,24 +4,24 @@
   "size": "L",
   "createdAt": "2026-07-24T20:03:11.870Z",
   "closedAt": null,
-  "currentWave": "W0",
+  "currentWave": "W1",
   "status": "in-progress",
   "waves": [
     {
       "id": "W0",
-      "status": "in-progress",
+      "status": "done",
       "agent": "deno-runtime-expert",
       "startedAt": "2026-07-24T20:03:12.211Z",
-      "finishedAt": null,
+      "finishedAt": "2026-07-24T20:12:32.132Z",
       "rounds": 1,
-      "reportPath": null,
-      "outcome": null
+      "reportPath": "002-tests/REPORT.md",
+      "outcome": "RED"
     },
     {
       "id": "W1",
-      "status": "pending",
-      "agent": null,
-      "startedAt": null,
+      "status": "in-progress",
+      "agent": "deno-runtime-expert",
+      "startedAt": "2026-07-24T20:12:32.466Z",
       "finishedAt": null,
       "rounds": 1,
       "reportPath": null,
@@ -49,5 +49,5 @@
     }
   ],
   "blockers": [],
-  "lastEvent": "W0 started (deno-runtime-expert)"
+  "lastEvent": "W1 started (deno-runtime-expert)"
 }

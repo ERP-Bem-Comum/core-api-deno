@@ -29,5 +29,11 @@ O `Deno.Command` **não** fecha testes quebrados (não há testes quebrados). O 
 3. **Robustez** — invocação `deno run` própria em vez de depender do `deno` tolerar flags do Node
    (`--experimental-strip-types`), que uma versão futura pode rejeitar.
 
-Não é bug-fix; é refactor idiomático/robustez. **Escalado ao humano** (eu vendi valor errado):
-seguir com o refactor Deno-first mesmo assim, ou repriorizar?
+Não é bug-fix; é refactor idiomático/robustez.
+
+## Decisão do dono (informada): PROSSEGUIR — migração de tecnologia deno-like
+
+Com a correção na mesa, o dono decidiu migrar mesmo assim: *"passar tudo que der para as APIs do
+Deno que não vá quebrar o código — isso é migração de tecnologia de verdade"*. O RED se reframe:
+**o código usa `node:child_process`, não a API nativa `Deno.Command`** — fail-first de estilo/estética
+Deno, não de bug. W1 migra os ~20 arquivos. Roadmap completo: `.claude/.planning/DENO-NATIVE-MIGRATION.md`.

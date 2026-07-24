@@ -4,11 +4,11 @@
 
 | Wave | Status | Skill | REPORT | Última atualização |
 | :--- | :--- | :--- | :--- | :--- |
-| W0 | in-progress | deno-runtime-expert | — | 2026-07-24T20:03:12.211Z |
-| W1 | pending | — | — | — |
+| W0 | done (RED) | deno-runtime-expert | 002-tests/REPORT.md | 2026-07-24T20:12:32.132Z |
+| W1 | in-progress | deno-runtime-expert | — | 2026-07-24T20:12:32.466Z |
 | W2 | pending | — | — | — |
 | W3 | pending | — | — | — |
 
 ## Último evento
 
-W0 started (deno-runtime-expert)
+W1 started (deno-runtime-expert)

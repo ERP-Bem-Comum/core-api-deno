@@ -8,9 +8,7 @@
 
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
-import process from 'node:process';
 
 import { moduleDir } from '#src/shared/module-dir.ts';
 
@@ -25,21 +23,20 @@ type RunOutcome = Readonly<{ code: number; stderr: string }>;
 //
 // Env mínima e explícita: herdar `process.env` vazaria uma AUTH_DATABASE_URL da máquina do dev e
 // o teste passaria a depender do ambiente.
-const runJob = async (env: Readonly<Record<string, string>>): Promise<RunOutcome> =>
-  new Promise<RunOutcome>((settle) => {
-    const child = spawn(process.execPath, ['--experimental-strip-types', '--no-warnings', RUN], {
-      cwd: REPO_ROOT,
-      env: { PATH: process.env['PATH'] ?? '', ...env },
-    });
-    let stderr = '';
-    child.stderr.setEncoding('utf8');
-    child.stderr.on('data', (chunk: string) => {
-      stderr += chunk;
-    });
-    child.on('close', (code) => {
-      settle({ code: code ?? -1, stderr });
-    });
+const runJob = async (env: Readonly<Record<string, string>>): Promise<RunOutcome> => {
+  const command = new Deno.Command(Deno.execPath(), {
+    args: ['run', '-A', RUN],
+    cwd: REPO_ROOT,
+    // clearEnv: Deno.Command HERDA o env por padrão (oposto do spawn sem `env`). Sem isto, uma
+    // AUTH_DATABASE_URL da máquina do dev vazaria e o teste passaria a depender do ambiente.
+    clearEnv: true,
+    env: { PATH: Deno.env.get('PATH') ?? '', ...env },
+    stdout: 'null',
+    stderr: 'piped',
   });
+  const { code, stderr } = await command.output();
+  return { code, stderr: new TextDecoder().decode(stderr) };
+};
 
 describe('job sync-permissions — exit codes — AUTH-SYNC-PERMISSIONS-JOB W0 (CA4)', () => {
   it('CA4: sem AUTH_DATABASE_URL → exit 78 (EX_CONFIG) e stderr nomeia a env', async () => {
