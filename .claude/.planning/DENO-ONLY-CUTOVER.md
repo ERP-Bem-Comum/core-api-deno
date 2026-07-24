@@ -1,6 +1,11 @@
 # Épico: Cutover Deno-only
 
-> **Status:** planejado (aguardando execução) · **Decisão:** [ADR-0054](../../handbook/architecture/adr/0054-deno-runtime-supersedes-node.md) + [ADR-0056](../../handbook/architecture/adr/0056-deno-only-cutover-amends-0054.md) · **Frente paralela:** [ADR-0055](../../handbook/architecture/adr/0055-postgresql-supersedes-mysql.md) (Postgres)
+> 🔴 **REBASE TOTAL DE TECNOLOGIA — LINHA PARALELA.** Este épico troca **runtime (Node→Deno) +
+> banco (MySQL→PostgreSQL)** por completo. Vive **exclusivamente** na branch `epic/deno-postgres-migration`,
+> **em paralelo à `dev`** (que segue Node/MySQL em produção). **NUNCA** commitar/mergear na `dev` até
+> o cutover estar validado ponta-a-ponta — só então um rebase seguro. Ver [[deno-cutover-parallel-branch-only]].
+>
+> **Status:** Etapas 1-2 closed-green · **Branch:** `epic/deno-postgres-migration` (research: `spike/0023`) · **Decisão:** [ADR-0054](../../handbook/architecture/adr/0054-deno-runtime-supersedes-node.md) + [ADR-0056](../../handbook/architecture/adr/0056-deno-only-cutover-amends-0054.md) · **Frente paralela:** [ADR-0055](../../handbook/architecture/adr/0055-postgresql-supersedes-mysql.md) (Postgres)
 
 ## Objetivo
 
