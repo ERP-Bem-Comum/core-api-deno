@@ -1,9 +1,27 @@
 # DENO-CUTOVER-GATE — W1 (deno-runtime-expert playbook)
 
-## Resultado: ⚠️ BLOQUEADO — typecheck-sob-Deno precisa de investigação dedicada (escalado)
+## Resultado: 🟡 CAMINHO ENCONTRADO — fix do blocker isolado; restam 8 erros de config (W1 continua)
 
-3 dos 4 gates são triviais sob Deno; o **typecheck** revelou um blocker real. `deno.json` foi
-**revertido** ao estado verde da Etapa 2 (não commito gate meio-quebrado).
+3 dos 4 gates são triviais sob Deno; o **typecheck** teve um blocker que foi **resolvido**. `deno.json`
+foi revertido ao estado verde da Etapa 2 por ora (não commito gate meio-pronto até os 8 residuais).
+
+## BREAKTHROUGH — o fix do ImportMeta
+
+`compilerOptions: { types: [] }` no `deno.json` **desliga a inclusão automática do `@types/node`**
+ambiente (que estragava o `ImportMeta`). Efeito medido no check amplo (`src/ scripts/ tests/`):
+
+- **62 → 8 erros.** Sumiram TODOS os 52 `ImportMeta` (TS2339) + 10 TS2584.
+
+## Os 8 residuais (bounded — não é blocker)
+
+- **6× TS2345** `'string | undefined' não-atribuível a 'string'`.
+- **2× TS2322** objeto de domínio (`bank/agency/...`, `keyType/key`) com `| undefined` extra.
+
+Causa provável: o `deno check` usa os `compilerOptions` do `deno.json` (só `types:[]`), **sem** os
+flags strict do `tsconfig.json` (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, …). O
+`tsc` passa com eles. **Próximo passo do W1:** espelhar os `compilerOptions` strict do tsconfig no
+`deno.json` e reavaliar — os 8 devem alinhar com o tsc (que é verde) ou revelar gaps reais
+Deno-node-types (fix pontual com narrowing/cast).
 
 ## O que FUNCIONA (provado)
 
@@ -25,20 +43,14 @@
 
 O probe puro (sem NENHUM npm dep) passa — por isso o teste isolado inicial enganou.
 
-## Alternativa (tsc-sob-Deno) — também não trivial
+O probe puro (sem NENHUM npm dep) passa — por isso o teste isolado inicial enganou. A rota **B**
+(corrigir o `deno check` nativo via `compilerOptions`) foi a vencedora — ver breakthrough acima.
 
-`deno run -A npm:typescript@6.0.0/bin/tsc` falhou no specifier (`6.0.0` exato não existe; é range).
-Mesmo com o specifier certo, o `tsc` sob Deno precisaria resolver `@types/node` + tsconfig sem o
-node_modules — questão em aberto.
+## Estado e próximo passo do W1
 
-## Escalado ao humano (decisão de rota do typecheck-sob-Deno)
-
-Nenhum é hack de 2 minutos. Opções:
-- **A** — manter `tsc` como ferramenta de typecheck, invocado sob Deno com o specifier certo
-  (`npm:typescript@<range>`), validando resolução de `@types` sob Deno.
-- **B** — corrigir o `deno check` nativo (investigar `compilerOptions.types`/lib/module p/ o
-  `@types/node` não estragar o `ImportMeta`). Spike dedicado.
-- **C** — diferir só o typecheck: entregar os 3 gates (test/prettier/eslint sob Deno) e manter
-  `pnpm run typecheck` (tsc) até o fim, migrando o typecheck por último.
-
-Os outros 3 gates ficam prontos para entrega assim que a rota do typecheck for decidida.
+- **Fix do blocker:** `compilerOptions.types: []` (62→8 erros). **Ainda não commitado** — o `deno.json`
+  está no estado verde da Etapa 2 até os 8 residuais fecharem.
+- **Continuar:** espelhar os `compilerOptions` strict do `tsconfig.json` no `deno.json`, resolver os
+  ≤8 sites (narrowing/cast ou alinhamento de config), então adicionar as tasks `check`/`lint`/`fmt-check`
+  + `nodeModulesDir` e provar os 4 gates verdes (W1→GREEN), W2, W3.
+- Os outros 3 gates (test/prettier/eslint sob Deno) já estão provados prontos.
