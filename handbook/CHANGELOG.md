@@ -4,6 +4,14 @@ Mudanças relevantes na documentação do projeto. Formato baseado em [Keep a Ch
 
 ---
 
+## 2026-07-24 — 🦕✂️ ADR-0056 (Accepted): estratégia de migração — cutover Deno-only (amends ADR-0054)
+
+Corrige a **estratégia de migração** do [ADR-0054](./architecture/adr/0054-deno-runtime-supersedes-node.md) (a **decisão** de adotar Deno permanece; muda **como** se chega lá). O [ADR-0056](./architecture/adr/0056-deno-only-cutover-amends-0054.md) troca o *strangler-fig com Node autoritativo em paralelo* por um **cutover Deno-only**: runtime único, **Node e pnpm saem por completo**; só sobrevive **pacote npm sem boa alternativa no JSR**, consumido via `npm:` **pelo Deno**.
+
+Motivo (medido no W0 do ticket `DENO-WS-HYBRID`): ativar o enforce do [ADR-0006](./architecture/adr/0006-modular-monolith-core-api.md) **no Node** exige `package.json` por módulo, o que **quebra os 338 imports `#src/*`** (`ERR_PACKAGE_IMPORT_NOT_DEFINED`) e o Node **veta o fix** (`ERR_INVALID_PACKAGE_TARGET`). Sem Node, o atrito **desaparece** — `@core/X` só precisa resolver no Deno (a fatia 1 provou). Estratégia em **4 etapas sequenciadas** (épico [`DENO-ONLY-CUTOVER`](../.claude/.planning/DENO-ONLY-CUTOVER.md)), cada uma um ticket W0→W3 **verificado sob Deno**: Tooling → Dependências (JSR onde há alternativa boa, `npm:` no resto) → Enforce (`DENO-WS-HYBRID` reescopado, 46 imports → `@core/X`) → Remoção (Node/pnpm fora do CI/Docker; `package.json`/`pnpm-lock`/`pnpm-workspace` deletados). O **gate de regressão** deixa de ser Node×Deno e passa a **Deno vs último-Deno-bom**. O **PostgreSQL** (ADR-0055) segue como **frente paralela**, independente do runtime.
+
+---
+
 ## 2026-07-23 — 🦕🐘 ADR-0054 + ADR-0055 (Accepted): re-plataforma Deno + PostgreSQL
 
 Decisão de re-plataforma do `core-api`, **medida antes de decidir** (spike `spike/0023`): sai do Node.js para o **Deno** ([ADR-0054](./architecture/adr/0054-deno-runtime-supersedes-node.md), supersedes [ADR-0002](./architecture/adr/0002-keep-nodejs-runtime.md) + [ADR-0009](./architecture/adr/0009-node-24-typescript-6-with-7-roadmap.md)) e do MySQL 8.4 para o **PostgreSQL** ([ADR-0055](./architecture/adr/0055-postgresql-supersedes-mysql.md), supersedes [ADR-0013](./architecture/adr/0013-mysql-database-engine.md) + [ADR-0020](./architecture/adr/0020-mysql-only-supersedes-dual-dialect.md)), **mantendo Drizzle**.

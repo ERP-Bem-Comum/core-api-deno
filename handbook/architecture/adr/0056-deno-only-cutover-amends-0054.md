@@ -2,7 +2,7 @@
 
 # ADR-0056: Estratégia de migração — cutover Deno-only (amends ADR-0054)
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-07-24
 - **Deciders:** Arquiteto técnico + Gabriel Aderaldo
 - **Amends:** [ADR-0054](./0054-deno-runtime-supersedes-node.md) — corrige a **estratégia de migração** (§"Estratégia de migração"). A **decisão** do 0054 (adotar Deno) permanece; muda **como** se chega lá.
