@@ -1,5 +1,12 @@
 {
   "workspace": ["./src/modules/*"],
+  // Subpath imports internos (Etapa 1 do cutover, DENO-CUTOVER-TOOLING). Trailing-slash é a
+  // semântica do import map do Deno — o glob "#src/*" estilo package.json NÃO é honrado. Move a
+  // autoridade de resolução do package.json#imports para cá; o package.json sai na Etapa 4.
+  "imports": {
+    "#src/": "./src/",
+    "#scripts/": "./scripts/"
+  },
   // Manifesto de permissões least-privilege para o port Node → Deno (inquiry 0023).
   // Cada flag foi DERIVADA da superfície real de capabilities de `src/` e VALIDADA
   // empiricamente pelo harness (scripts/migration/runtime-signature.ts):
