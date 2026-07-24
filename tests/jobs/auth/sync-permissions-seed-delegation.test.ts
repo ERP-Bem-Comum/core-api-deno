@@ -24,8 +24,9 @@ import { openAuthMysql } from '#src/modules/auth/adapters/persistence/drivers/my
 import type { AuthMysqlHandle } from '#src/modules/auth/adapters/persistence/drivers/mysql-driver.ts';
 import * as schema from '#src/modules/auth/adapters/persistence/schemas/mysql.ts';
 import * as PermissionCatalog from '#src/modules/auth/domain/authorization/permission-catalog.ts';
+import { moduleDir } from '#src/shared/module-dir.ts';
 
-const REPO_ROOT = resolve(import.meta.dirname, '..', '..', '..');
+const REPO_ROOT = resolve(moduleDir(import.meta.url), '..', '..', '..');
 const SEED = resolve(REPO_ROOT, 'scripts', 'seed', 'admin-user.ts');
 const CONN = process.env['AUTH_SYNC_TEST_DATABASE_URL'] ?? '';
 

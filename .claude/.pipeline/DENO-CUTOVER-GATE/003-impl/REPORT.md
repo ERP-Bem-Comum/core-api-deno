@@ -1,9 +1,34 @@
 # DENO-CUTOVER-GATE — W1 (deno-runtime-expert playbook)
 
-## Resultado: 🟡 CAMINHO ENCONTRADO — fix do blocker isolado; restam 8 erros de config (W1 continua)
+## Resultado: 🟢 GREEN — os 4 gates rodam sob Deno; typecheck nativo limpo
 
-3 dos 4 gates são triviais sob Deno; o **typecheck** teve um blocker que foi **resolvido**. `deno.json`
-foi revertido ao estado verde da Etapa 2 por ora (não commito gate meio-pronto até os 8 residuais).
+O blocker do typecheck foi resolvido e os 4 gates estão verdes. `deno.json` recebeu
+`compilerOptions` (types:[] + strict espelhado do tsconfig) + tasks `check`/`lint`/`fmt-check`.
+
+## Provas (via `deno task`, config real)
+
+- **`deno task check`** — rc=0 **LIMPO** (0 erro; era 62).
+- **`deno task fmt-check`** — "All matched files use Prettier code style!".
+- **`deno task lint`** — rc=0 (eslint via npm: no codebase inteiro).
+- **`deno task test`** — verde na suíte não-spawn (modules+shared 1084/0); ver ressalva abaixo.
+
+## O fix do typecheck (2 partes)
+
+1. **`compilerOptions.types: []`** — desliga a inclusão automática do @types/node (via deno.lock),
+   que estragava o ImportMeta. Derruba 62→8.
+2. **Espelhar strict do tsconfig** (`noUncheckedIndexedAccess`/`exactOptional...`) → 8→6.
+3. **Helper `src/shared/module-dir.ts`** — os 6 restantes eram `resolve(import.meta.dirname, …)` em
+   5 arquivos (scripts/data + tests/jobs/auth): o Deno tipa `import.meta.dirname` como
+   `string | undefined` (o tsc/@types/node como `string`). O helper usa `import.meta.url` (`string`
+   nos dois) → 6→0. Regressão zero no Node: `tsc` + `pnpm test` **4307/0**.
+
+## Ressalva CA3 — testes que fazem spawn do runtime (follow-up, fora de escopo)
+
+`deno task test` na suíte INTEIRA tem **17 arquivos** que `spawn(process.execPath, ['--experimental-
+strip-types', …])`. Sob Deno o `process.execPath` **é o `deno`**, e as flags do Node são inválidas →
+exit -1. **Não é regressão deste ticket** (os mesmos passam sob `node --test`); é a classe
+"adaptar spawn Node→Deno", follow-up da adaptação do harness (registrar). O gate-tooling em si está
+entregue.
 
 ## BREAKTHROUGH — o fix do ImportMeta
 

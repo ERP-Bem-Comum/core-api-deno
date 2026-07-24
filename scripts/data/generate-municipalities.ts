@@ -9,14 +9,16 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
+import { moduleDir } from '#src/shared/module-dir.ts';
+
 // O JSON nivelado do IBGE usa chaves com hífen (`municipio-id`, `UF-sigla`).
 // Tipamos como Record frouxo (chaves hifenadas não passam no naming-convention) e
 // lemos via bracket + String() na transformação.
 type IbgeRow = Readonly<Record<string, string | number>>;
 
-const IN = resolve(import.meta.dirname, '../../.tmp/ibge-municipios.json');
+const IN = resolve(moduleDir(import.meta.url), '../../.tmp/ibge-municipios.json');
 const OUT = resolve(
-  import.meta.dirname,
+  moduleDir(import.meta.url),
   '../../src/modules/partners/domain/geography/municipalities.data.ts',
 );
 

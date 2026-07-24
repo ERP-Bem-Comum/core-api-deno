@@ -64,11 +64,19 @@ Tabela original (referência):
   (esbuild/fast-uri/brace-expansion — hoje o `deno audit` já não acusa nenhum, mas monitorar).
 - **Verifica:** build da imagem Deno sobe o app; deploy no x99.
 
-**Achados carregados das Etapas 1-2 (endereçar aqui):**
-- `import.meta.url` → 6× `TS2339` sob `deno check` (pré-existente; type-check difere do `tsc`+@types/node).
-  Ao trocar o gate de tipo `tsc`→`deno check`, resolver via `compilerOptions` no `deno.json`.
-- Hook `block-npm.sh` **colide com o specifier `npm:`** (bloqueia `deno info npm:x`, `grep '"npm":'`…).
-  Ensinar o hook a distinguir o **CLI `npm`** do **specifier `npm:` do Deno** antes de remover o pnpm.
+**Fatia 1 — gate de qualidade Deno** ✅ CONCLUÍDA (`DENO-CUTOVER-GATE`, closed-green): `deno.json`
+ganhou `compilerOptions` (`types:[]` desliga o @types/node que estragava o `ImportMeta` — o
+`import.meta.url` some do erro) + tasks `check`/`lint`/`fmt-check`. Os 4 gates rodam sob Deno
+(check nativo; prettier/eslint via `npm:`, sem churn). Helper `src/shared/module-dir.ts` resolve a
+divergência `import.meta.dirname` (Deno `string|undefined` vs tsc `string`). Node 4307/0.
+
+**Achados/follow-ups pendentes da Etapa 4:**
+- **Adaptar 17 testes de spawn** — `spawn(process.execPath, [flags-node])` falha sob `deno test`
+  (execPath=deno, flags do Node inválidas). Adaptar a invocação Node→Deno.
+- **Remover o package-manager** — deletar package.json/pnpm-lock/pnpm-workspace + migrar 81 scripts→task.
+- **Docker** (denoland/deno), **3 CI workflows**, **4 git-hooks** — flipar de pnpm/node p/ deno.
+- Hook `block-npm.sh` colide com o texto "npm" solto (não com o specifier `npm:`, que passa) —
+  cosmético; endereçar quando reescrever os hooks.
 
 ## Dependências
 

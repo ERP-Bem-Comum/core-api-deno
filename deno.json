@@ -38,6 +38,21 @@
     "unpdf": "npm:unpdf@1.6.2",
     "hash-wasm": "npm:hash-wasm@^4.12.0"
   },
+  // Typecheck nativo do Deno (Etapa 4, DENO-CUTOVER-GATE). Espelha os flags strict do tsconfig.json.
+  // `types: []` é o pulo do gato: desliga a inclusão automática do @types/node (puxado por
+  // mysql2/drizzle via deno.lock), que sob o module-mode do deno check estraga o ImportMeta
+  // (import.meta.url/.dirname somem). Só afeta o type-check — runtime/`deno test --no-check` intactos.
+  "compilerOptions": {
+    "types": [],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "exactOptionalPropertyTypes": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true
+  },
   // Manifesto de permissões least-privilege para o port Node → Deno (inquiry 0023).
   // Cada flag foi DERIVADA da superfície real de capabilities de `src/` e VALIDADA
   // empiricamente pelo harness (scripts/migration/runtime-signature.ts):
@@ -75,6 +90,13 @@
     "test": "deno test --allow-read --allow-env --allow-sys --allow-write --allow-run --no-check tests/",
 
     // ── Testes de integração — o conjunto de teste + net (MySQL real via túnel) ──
-    "test:integration": "deno test --allow-read --allow-env --allow-sys --allow-write --allow-run --allow-net --no-check tests/"
+    "test:integration": "deno test --allow-read --allow-env --allow-sys --allow-write --allow-run --allow-net --no-check tests/",
+
+    // ── Gates de qualidade sob Deno (Etapa 4, DENO-CUTOVER-GATE) — substituem
+    //    pnpm run typecheck/lint/format:check. `check` é nativo (limpo via compilerOptions.types:[]);
+    //    lint/fmt-check mantêm eslint/prettier (mesmas regras, zero churn) rodados via npm: pelo Deno.
+    "check": "deno check src/ scripts/ tests/",
+    "lint": "deno run -A npm:eslint@10.3.0 .",
+    "fmt-check": "deno run -A npm:prettier@3.8.3 --check ."
   }
 }

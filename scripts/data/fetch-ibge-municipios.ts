@@ -9,8 +9,10 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 
+import { moduleDir } from '#src/shared/module-dir.ts';
+
 const URL = 'https://servicodados.ibge.gov.br/api/v1/localidades/municipios?view=nivelado';
-const OUT = resolve(import.meta.dirname, '../../.tmp/ibge-municipios.json');
+const OUT = resolve(moduleDir(import.meta.url), '../../.tmp/ibge-municipios.json');
 
 const main = async (): Promise<void> => {
   process.stdout.write(`Baixando ${URL}\n`);

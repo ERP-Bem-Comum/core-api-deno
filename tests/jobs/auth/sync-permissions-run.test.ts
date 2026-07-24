@@ -12,7 +12,9 @@ import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
 import process from 'node:process';
 
-const REPO_ROOT = resolve(import.meta.dirname, '..', '..', '..');
+import { moduleDir } from '#src/shared/module-dir.ts';
+
+const REPO_ROOT = resolve(moduleDir(import.meta.url), '..', '..', '..');
 const RUN = resolve(REPO_ROOT, 'src', 'jobs', 'auth', 'sync-permissions', 'run.ts');
 const EX_CONFIG = 78;
 

@@ -15,7 +15,9 @@ import { strict as assert } from 'node:assert';
 import { readFile, access } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-const REPO_ROOT = resolve(import.meta.dirname, '..', '..', '..');
+import { moduleDir } from '#src/shared/module-dir.ts';
+
+const REPO_ROOT = resolve(moduleDir(import.meta.url), '..', '..', '..');
 const JOB_SCRIPT = 'job:auth:sync-permissions';
 const RUN_PATH = 'src/jobs/auth/sync-permissions/run.ts';
 
