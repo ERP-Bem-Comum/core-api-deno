@@ -3,9 +3,9 @@
   "ticket": "DENO-SUBPROCESS-COMMAND",
   "size": "L",
   "createdAt": "2026-07-24T20:03:11.870Z",
-  "closedAt": null,
-  "currentWave": "W1",
-  "status": "in-progress",
+  "closedAt": "2026-07-25T17:27:14.509Z",
+  "currentWave": null,
+  "status": "closed-green",
   "waves": [
     {
       "id": "W0",
@@ -19,35 +19,35 @@
     },
     {
       "id": "W1",
-      "status": "in-progress",
+      "status": "done",
       "agent": "deno-runtime-expert",
       "startedAt": "2026-07-24T20:12:32.466Z",
-      "finishedAt": null,
+      "finishedAt": "2026-07-25T17:27:11.681Z",
       "rounds": 1,
-      "reportPath": null,
-      "outcome": null
+      "reportPath": "003-impl/REPORT.md",
+      "outcome": "GREEN"
     },
     {
       "id": "W2",
-      "status": "pending",
-      "agent": null,
-      "startedAt": null,
-      "finishedAt": null,
+      "status": "done",
+      "agent": "code-reviewer",
+      "startedAt": "2026-07-25T17:27:12.487Z",
+      "finishedAt": "2026-07-25T17:27:13.291Z",
       "rounds": 1,
-      "reportPath": null,
-      "outcome": null
+      "reportPath": "005-quality/REPORT.md",
+      "outcome": "APPROVED"
     },
     {
       "id": "W3",
-      "status": "pending",
-      "agent": null,
-      "startedAt": null,
-      "finishedAt": null,
+      "status": "done",
+      "agent": "ts-quality-checker",
+      "startedAt": "2026-07-25T17:27:13.732Z",
+      "finishedAt": "2026-07-25T17:27:14.111Z",
       "rounds": 1,
-      "reportPath": null,
-      "outcome": null
+      "reportPath": "005-quality/REPORT.md",
+      "outcome": "GREEN"
     }
   ],
   "blockers": [],
-  "lastEvent": "W1 started (deno-runtime-expert)"
+  "lastEvent": "closed-green"
 }

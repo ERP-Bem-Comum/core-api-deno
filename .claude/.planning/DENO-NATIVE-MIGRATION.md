@@ -18,7 +18,7 @@
 
 | # | Fatia | De → Para | Sites | Cruza Deno-exclusivo? |
 | --- | --- | --- | --- | --- |
-| 1 | `DENO-SUBPROCESS-COMMAND` | `node:child_process` (spawn/spawnSync/execFile) → `Deno.Command` | ~20 arq. | não (só tests/scripts) |
+| 1 | `DENO-SUBPROCESS-COMMAND` ✅ | `node:child_process` (spawn/spawnSync/execFile) → `Deno.Command` | 19 arq. | não (só tests/scripts) |
 | 2 | `DENO-ENV-NATIVE` | `process.env['X']` → `Deno.env.get('X')` | ~46 src + 61 test | **SIM** (src/) |
 | 3 | `DENO-PROCESS-LIFECYCLE` | `process.exit`→`Deno.exit`; `process.exitCode`→`Deno.exitCode`; signals→`Deno.addSignalListener`; `uncaught/unhandled`→`globalThis.addEventListener` | ~40 | SIM |
 | 4 | `DENO-STD-FS` | `node:fs`/`fs/promises` → `Deno.readTextFile`/`writeTextFile`/`readTextFileSync` | ~5 src + testes | SIM |
