@@ -20,7 +20,6 @@
 //
 // Sem dependências novas (ADR-0011): só node:*.
 
-import { spawnSync } from 'node:child_process';
 import { mkdir, readdir, writeFile, readFile, rm } from 'node:fs/promises';
 import type { Dirent } from 'node:fs';
 import path from 'node:path';
@@ -216,18 +215,24 @@ const RUNTIMES: Readonly<Record<string, RtSpec>> = {
 const runJUnit = async (runtime: string, files: readonly string[], lane: Lane): Promise<string> => {
   const spec = RUNTIMES[runtime];
   if (spec === undefined) throw new Error(`runtime desconhecido: ${runtime}`);
-  const spawnEnv = {
-    env: { ...process.env, ...lane.env },
-    encoding: 'utf8' as const,
-    maxBuffer: 256 * 1024 * 1024,
-  };
+  // Deno.Command herda o ambiente e mescla `lane.env` por cima (dispensa o spread de process.env).
   if (spec.junitFromStdout) {
-    const r = spawnSync(spec.bin, [...spec.build(files, lane, '')], spawnEnv);
-    return r.stdout;
+    const { stdout } = new Deno.Command(spec.bin, {
+      args: [...spec.build(files, lane, '')],
+      env: lane.env,
+      stdout: 'piped',
+      stderr: 'inherit',
+    }).outputSync();
+    return new TextDecoder().decode(stdout);
   }
   await mkdir(BASELINE_DIR, { recursive: true });
-  const dest = path.join(BASELINE_DIR, `.junit-${runtime}-${process.pid}.xml`);
-  spawnSync(spec.bin, [...spec.build(files, lane, dest)], spawnEnv);
+  const dest = path.join(BASELINE_DIR, `.junit-${runtime}-${Deno.pid}.xml`);
+  new Deno.Command(spec.bin, {
+    args: [...spec.build(files, lane, dest)],
+    env: lane.env,
+    stdout: 'null',
+    stderr: 'inherit',
+  }).outputSync();
   const xml = await readFile(dest, 'utf8').catch(() => '');
   await rm(dest, { force: true });
   return xml;
@@ -364,8 +369,20 @@ const cmdBench = async (lane: Lane, iterations: number): Promise<number> => {
 // Estende o estudo do port para além de node/deno: node26 (TS nativo estável), bun.
 // Runtime cujo binário não existe é pulado (reportado). 1º run = assinatura + cold;
 // runs seguintes = warm.
-const runtimeAvailable = (spec: RtSpec): boolean =>
-  spawnSync(spec.bin, ['--version'], { encoding: 'utf8' }).status === 0;
+const runtimeAvailable = (spec: RtSpec): boolean => {
+  try {
+    // Deno.Command LANÇA se o binário não existe (ao contrário do spawnSync, que devolve status null).
+    return (
+      new Deno.Command(spec.bin, {
+        args: ['--version'],
+        stdout: 'null',
+        stderr: 'null',
+      }).outputSync().code === 0
+    );
+  } catch {
+    return false;
+  }
+};
 
 const cmdMatrix = async (lane: Lane, iterations: number): Promise<number> => {
   process.stdout.write(`\n== MATRIX · lane ${lane.name} (${iterations}× por runtime) ==\n`);
