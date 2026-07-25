@@ -571,7 +571,7 @@ export const mapRowToDocument = (
   // Se o status real for diferente de 'Open', transportamos via cast seguro:
   // o CHECK no banco garante que só chegam valores do enum de 7.
   if (status !== 'Open') {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // deno-lint-ignore no-explicit-any
     return ok({ ...open, status } as any as OpenDocument);
   }
   return ok(open);

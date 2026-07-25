@@ -23,7 +23,7 @@ import { buildNotificationsPoolOptions } from '#src/modules/notifications/adapte
 
 const CONN = 'mysql://core:pw@127.0.0.1:3306/core';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// deno-lint-ignore no-explicit-any
 const DRIVERS: readonly (readonly [string, (o: any) => unknown])[] = [
   ['contracts', buildContracts],
   ['auth', buildAuthPoolOptions],

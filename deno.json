@@ -50,8 +50,19 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "exactOptionalPropertyTypes": true,
-    "isolatedModules": true,
     "verbatimModuleSyntax": true
+  },
+  // Lint nativo do Deno (Etapa 4 do cutover, DENO-LINT-FLIP). Substitui o eslint, que roda com
+  // @types/node e NÃO tipa o global `Deno` → disparava no-unsafe-* em todo código Deno-native.
+  // Regras excluídas p/ espelhar a postura do projeto:
+  //   • require-await — o eslint do projeto já tem 'off' (async p/ uniformidade de interface).
+  //   • no-slow-types — regra de PUBLICAÇÃO no JSR; os workspace members são internos, não publicados.
+  //   • no-control-regex — o eslint não enforça; os usos são sanitização de input (control chars intencionais).
+  // Exceções pontuais de no-explicit-any ficam com `// deno-lint-ignore no-explicit-any` no site.
+  "lint": {
+    "rules": {
+      "exclude": ["require-await", "no-slow-types", "no-control-regex"]
+    }
   },
   // Manifesto de permissões least-privilege para o port Node → Deno (inquiry 0023).
   // Cada flag foi DERIVADA da superfície real de capabilities de `src/` e VALIDADA
@@ -96,7 +107,7 @@
     //    pnpm run typecheck/lint/format:check. `check` é nativo (limpo via compilerOptions.types:[]);
     //    lint/fmt-check mantêm eslint/prettier (mesmas regras, zero churn) rodados via npm: pelo Deno.
     "check": "deno check src/ scripts/ tests/",
-    "lint": "deno run -A npm:eslint@10.3.0 .",
+    "lint": "deno lint",
     "fmt-check": "deno run -A npm:prettier@3.8.3 --check ."
   }
 }

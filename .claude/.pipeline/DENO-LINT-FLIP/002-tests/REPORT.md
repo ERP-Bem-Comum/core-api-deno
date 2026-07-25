@@ -1,0 +1,1 @@
+W0: 544 issues = 526 require-await (eslint OFF) + 11 no-slow-types (JSR-irrelevante) + 5 no-control-regex (eslint não enforça) + 2 no-explicit-any (têm eslint-disable). Fix: 3 excludes na config + 2 deno-lint-ignore.
