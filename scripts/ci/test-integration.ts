@@ -6,9 +6,8 @@
 // a env var de gate (MYSQL_INTEGRATION etc.), a concorrência e os paths de teste.
 // O runner: cria secrets → `docker compose up --wait` → `node --test` → SEMPRE derruba e limpa.
 //
-// Sem dependências novas (ADR-0011): só node:child_process (spawnSync, shell:false) + node:fs.
+// Sem dependências novas (ADR-0011): subprocessos via Deno.Command nativo + node:fs.
 
-import { spawnSync } from 'node:child_process';
 import { mkdirSync, writeFileSync, rmSync, chmodSync } from 'node:fs';
 import process from 'node:process';
 
@@ -258,27 +257,41 @@ const removeTestSecrets = (): void => {
 };
 
 const dockerUp = (services: readonly string[]): number =>
-  spawnSync('docker', ['compose', 'up', '-d', ...services, '--wait'], { stdio: 'inherit' })
-    .status ?? 1;
+  new Deno.Command('docker', {
+    args: ['compose', 'up', '-d', ...services, '--wait'],
+    stdout: 'inherit',
+    stderr: 'inherit',
+  }).outputSync().code;
 
 const dockerDown = (): void => {
-  spawnSync('docker', ['compose', 'down', '-v'], { stdio: 'ignore' });
+  new Deno.Command('docker', {
+    args: ['compose', 'down', '-v'],
+    stdout: 'null',
+    stderr: 'null',
+  }).outputSync();
 };
 
-const runNodeTest = (suite: Suite): number => {
-  const flags = [
-    '--test',
-    ...(suite.concurrency1 ? ['--test-concurrency=1'] : []),
-    '--experimental-strip-types',
-    '--enable-source-maps',
-    '--no-warnings',
-  ];
-  return (
-    spawnSync('node', [...flags, ...suite.paths], {
-      stdio: 'inherit',
-      env: { ...process.env, ...suite.env },
-    }).status ?? 1
-  );
+const runSuiteTests = (suite: Suite): number => {
+  // `deno test` nativo (sem --experimental-strip-types/--no-warnings): serial por padrão
+  // (equivale ao antigo --test-concurrency=1); as suítes não-serializadas ganham --parallel.
+  // env: o Deno.Command HERDA o ambiente e mescla `suite.env` por cima (equivale ao spread).
+  return new Deno.Command(Deno.execPath(), {
+    args: [
+      'test',
+      '--no-check',
+      ...(suite.concurrency1 ? [] : ['--parallel']),
+      '--allow-read',
+      '--allow-env',
+      '--allow-sys',
+      '--allow-write',
+      '--allow-run',
+      '--allow-net',
+      ...suite.paths,
+    ],
+    stdout: 'inherit',
+    stderr: 'inherit',
+    env: suite.env,
+  }).outputSync().code;
 };
 
 const main = (): number => {
@@ -297,7 +310,7 @@ const main = (): number => {
       const up = dockerUp(suite.services);
       if (up !== 0) return up;
     }
-    return runNodeTest(suite);
+    return runSuiteTests(suite);
   } finally {
     if (suite.services.length > 0) dockerDown();
     if (suite.secrets) removeTestSecrets();

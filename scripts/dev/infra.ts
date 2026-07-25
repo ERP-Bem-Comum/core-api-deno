@@ -15,7 +15,6 @@
 //
 // Aplica skill `nodejs-process-runner`: spawnSync(shell:false) + exit codes sysexits.h.
 
-import { spawnSync } from 'node:child_process';
 import { accessSync, constants } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { argv, exit, stderr, stdout } from 'node:process';
@@ -67,7 +66,11 @@ depois, para restaurar a coerência dos secrets.
 // ─── Helpers ────────────────────────────────────────────────────────────────
 const runDocker = (args: readonly string[]): number => {
   stderr.write(`$ docker ${args.join(' ')}\n`);
-  return spawnSync('docker', [...args], { stdio: 'inherit' }).status ?? 1;
+  return new Deno.Command('docker', {
+    args: [...args],
+    stdout: 'inherit',
+    stderr: 'inherit',
+  }).outputSync().code;
 };
 
 const missingSecrets = (): readonly string[] =>
@@ -82,11 +85,11 @@ const missingSecrets = (): readonly string[] =>
 
 const runSecretsSetupForce = (): number => {
   stderr.write('$ secrets:setup --force\n');
-  return (
-    spawnSync('node', ['--experimental-strip-types', '--no-warnings', SECRETS_SCRIPT, '--force'], {
-      stdio: 'inherit',
-    }).status ?? 1
-  );
+  return new Deno.Command(Deno.execPath(), {
+    args: ['run', '-A', SECRETS_SCRIPT, '--force'],
+    stdout: 'inherit',
+    stderr: 'inherit',
+  }).outputSync().code;
 };
 
 const composeUp = (mail: boolean): number => {
